@@ -2,7 +2,7 @@ package com.maslov.booksmaslov.service;
 
 import com.maslov.booksmaslov.domain.Book;
 import com.maslov.booksmaslov.domain.Comment;
-import com.maslov.booksmaslov.repository.BookDao;
+import com.maslov.booksmaslov.repository.BookRepo;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -11,9 +11,9 @@ import java.util.List;
 public class ServiceHelper {
 
     private final ScannerHelper helper;
-    private final BookDao bookDao;
+    private final BookRepo bookDao;
 
-    public ServiceHelper(ScannerHelper helper, BookDao bookDao) {
+    public ServiceHelper(ScannerHelper helper, BookRepo bookDao) {
         this.helper = helper;
         this.bookDao = bookDao;
     }
@@ -35,7 +35,7 @@ public class ServiceHelper {
 
     public int getCommentId(int idForBook) {
         System.out.println("Choose and enter id of comment");
-        for (Comment c : bookDao.getBookById(idForBook).get().getListOfComments()) {
+        for (Comment c : bookDao.findById((long) idForBook).get().getListOfComments()) {
             System.out.println(c);
         }
         return helper.getIdFromUser();

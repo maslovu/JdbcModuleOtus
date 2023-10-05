@@ -91,6 +91,6 @@ public class BookServiceImpl implements BookService {
     public List<Comment> getComments() {
         System.out.println(ENTER_ID);
         long id = helper.getIdFromUser();
-        return bookRepo.findById(id).orElseThrow().getListOfComment();
+        return bookRepo.findById(id).orElseThrow().getListOfComments();
     }
 }

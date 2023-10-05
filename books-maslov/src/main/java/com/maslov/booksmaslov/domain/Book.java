@@ -55,5 +55,5 @@ public class Book {
     @Fetch(FetchMode.SUBSELECT)
     @OneToMany(targetEntity = Comment.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinColumn(name = "book_id")
-    private List<Comment> listOfComment;
+    private List<Comment> listOfComments;
 }

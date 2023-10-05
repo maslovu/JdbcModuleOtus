@@ -31,7 +31,6 @@
         <liquibase.version>4.8.0</liquibase.version>
         <postgresql.version>42.3.3</postgresql.version>
         <snakeyaml.version>1.26</snakeyaml.version>
-        <hibernate.version>6.1.0.Final</hibernate.version>
     </properties>
     <dependencies>
         <dependency>

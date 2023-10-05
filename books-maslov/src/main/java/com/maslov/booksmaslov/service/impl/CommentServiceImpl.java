@@ -36,14 +36,14 @@ public class CommentServiceImpl implements CommentService {
         Comment comm = new Comment(0, helper.getFromUser());
         Comment addedComment = commentRepo.save(comm);
         Book bookFromDB = bookRepo.findById(idForBook).orElseThrow();
-        List<Comment> commentList = bookFromDB.getListOfComment();
+        List<Comment> commentList = bookFromDB.getListOfComments();
         commentList.add(addedComment);
         Book book = Book.builder()
                 .name(bookFromDB.getName())
                 .genre(bookFromDB.getGenre())
                 .year(bookFromDB.getYear())
                 .author(bookFromDB.getAuthor())
-                .listOfComment(commentList)
+                .listOfComments(commentList)
                 .build();
         BeanUtils.copyProperties(book, bookFromDB, "id");
         bookRepo.save(bookFromDB);
@@ -62,7 +62,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = Comment.builder().commentForBook(newComment).build();
         BeanUtils.copyProperties(comment, commentFromDB, "id");
         commentRepo.save(commentFromDB);
-        return bookRepo.findById(idForBook).orElseThrow().getListOfComment();
+        return bookRepo.findById(idForBook).orElseThrow().getListOfComments();
     }
 
     @Override
@@ -71,7 +71,7 @@ public class CommentServiceImpl implements CommentService {
         long idForComment = getCommentId(idForBook);
         Comment comment = commentRepo.findById(idForComment).orElseThrow();
         commentRepo.deleteById(comment.getId());
-        return bookRepo.findById(idForBook).orElseThrow().getListOfComment();
+        return bookRepo.findById(idForBook).orElseThrow().getListOfComments();
     }
 
     private int getIdForBook() {
@@ -87,7 +87,7 @@ public class CommentServiceImpl implements CommentService {
 
     private int getCommentId(long idForBook) {
 
-        for (Comment c : bookRepo.findById(idForBook).orElseThrow().getListOfComment()) {
+        for (Comment c : bookRepo.findById(idForBook).orElseThrow().getListOfComments()) {
             System.out.println(c);
         }
         System.out.println("Choose and enter id of comment");
