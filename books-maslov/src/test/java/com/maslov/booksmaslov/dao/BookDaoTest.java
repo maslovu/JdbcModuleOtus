@@ -114,7 +114,7 @@ class BookDaoTest {
                 .genre(genre)
                 .year(year)
                 .author(authors)
-                .listOfComment(comments)
+                .listOfComments(comments)
                 .build();
         Book bookFromDB = bookRepo.findById(5L).orElseThrow();
         BeanUtils.copyProperties(book, bookFromDB, "id");
