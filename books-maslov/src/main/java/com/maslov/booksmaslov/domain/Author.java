@@ -1,7 +1,6 @@
 package com.maslov.booksmaslov.domain;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,7 +12,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -24,6 +22,6 @@ public class Author {
     private long id;
 
     @Column(name = "author_name", nullable = false, unique = true)
-    private String name;
+    private String authorName;
 
 }
