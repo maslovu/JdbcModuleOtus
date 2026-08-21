@@ -1,20 +1,15 @@
 package com.maslov.booksmaslov.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Data
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "authors")
@@ -24,6 +19,27 @@ public class Author {
     private long id;
 
     @Column(name = "author_name", nullable = false, unique = true)
-    private String name;
+    private String authorName;
 
+    // Геттеры, сеттеры, equals/hashCode строго по бизнес-ключу (без коллекции books!)
+    // mappedBy указывает на поле 'authors' в классе Book (владельце связи)
+    @Getter
+    @ManyToMany(mappedBy = "authors")
+    private Set<Book> books = new HashSet<>();
+
+    public Author(String authorName) {
+        this.authorName = authorName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Author author = (Author) o;
+        return Objects.equals(authorName, author.authorName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(authorName);
+    }
 }

@@ -1,7 +1,5 @@
 package com.maslov.booksmaslov.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,8 +11,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Data
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "year_of_publish")
@@ -26,4 +22,7 @@ public class YearOfPublish {
     @Column(name = "year", nullable = false, unique = true)
     private String dateOfPublish;
 
+    public YearOfPublish(String dateOfPublish) {
+        this.dateOfPublish = dateOfPublish;
+    }
 }
