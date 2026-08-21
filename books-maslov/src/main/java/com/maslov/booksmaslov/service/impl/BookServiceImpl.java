@@ -11,10 +11,10 @@ import com.maslov.booksmaslov.service.ScannerHelper;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -61,9 +61,10 @@ public class BookServiceImpl implements BookService {
         }
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public Book createBook() {
+        Book book = new Book();
         System.out.println("Enter name of the book");
         String name = helper.getFromUser();
         System.out.println("Enter name of the author");
@@ -77,9 +78,12 @@ public class BookServiceImpl implements BookService {
         val genre = new Genre(0, genreStr);
         System.out.println("You can add comment to this book");
         val comment = new Comment(0, helper.getFromUser());
-        var comments = new HashSet<Comment>();
-        comments.add(comment);
-        return bookDao.createBook(new Book(0, name, genre, year, author, comments));
+        book.setName(name);
+        book.setAuthor(author);
+        book.setYear(year);
+        book.setGenre(genre);
+        book.addComment(comment);
+        return bookDao.createBook(book);
     }
 
     @Transactional
@@ -123,6 +127,8 @@ public class BookServiceImpl implements BookService {
     public Set<Comment> getComments() {
         System.out.println(ENTER_ID);
         int id = helper.getIdFromUser();
-        return bookDao.getBookById(id).orElseThrow().getListOfComments();
+        var comments = bookDao.getBookById(id).orElseThrow().getComments();
+        System.out.println(comments);
+        return comments;
     }
 }

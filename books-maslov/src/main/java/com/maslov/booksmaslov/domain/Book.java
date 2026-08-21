@@ -1,8 +1,6 @@
 package com.maslov.booksmaslov.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -21,10 +19,12 @@ import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "books")
@@ -53,8 +53,18 @@ public class Book {
             inverseJoinColumns = {@JoinColumn(name = "author_id")})
     private List<Author> author;
 
-    @Fetch(FetchMode.SUBSELECT)
-    @OneToMany(targetEntity = Comment.class, cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_id")
-    private Set<Comment> listOfComments;
+    @Getter
+    @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    //указываем, если коммент не должен знать о книге @JoinColumn(name = "book_id")
+    private Set<Comment> comments = new HashSet<>();
+
+    public void addComment(Comment comment) {
+        this.comments.add(comment);
+        comment.setBook(this);
+    }
+
+    public void removeComment(Comment comment) {
+        this.comments.remove(comment);
+        comment.setBook(null);
+    }
 }
