@@ -10,14 +10,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.maslov.booksmaslov.sql.SQLConstants.GET_ALL_AUTHORS;
 import static com.maslov.booksmaslov.sql.SQLConstants.GET_AUTHOR_BY_NAME;
-import static java.util.Optional.ofNullable;
 
 @Component
 @Slf4j
