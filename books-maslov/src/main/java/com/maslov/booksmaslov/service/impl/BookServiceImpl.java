@@ -83,14 +83,7 @@ public class BookServiceImpl implements BookService {
         System.out.println("You can add comment to this book");
         val comment = new Comment(helper.getFromUser());
         book.setName(name);
-        Set<Author> setAuthors = new HashSet<>();
-        for (var author : authors) {
-            try {
-                setAuthors.add(authorDao.getByName(author));
-            } catch (RuntimeException e) {
-                setAuthors.add(new Author(author));
-            }
-        }
+        Set<Author> setAuthors = setAuthors(authors);
         for (var a : setAuthors) {
             book.addAuthors(a);
         }
@@ -155,5 +148,17 @@ public class BookServiceImpl implements BookService {
         var comments = bookDao.getBookById(id).getComments();
         System.out.println(comments);
         return comments;
+    }
+
+    private Set<Author> setAuthors(Set<String> authors) {
+        Set<Author> authorsOfBook = new HashSet<>();
+        for (var author : authors) {
+            try {
+                authorsOfBook.add(authorDao.getByName(author));
+            } catch (RuntimeException e) {
+                authorsOfBook.add(new Author(author));
+            }
+        }
+        return authorsOfBook;
     }
 }
