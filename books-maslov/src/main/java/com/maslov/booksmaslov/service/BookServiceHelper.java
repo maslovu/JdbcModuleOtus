@@ -46,7 +46,7 @@ public class BookServiceHelper {
         book.setAuthor(authors);
         book.setName(name);
         book.setGenre(genre);
-        book.setListOfComment(comments);
+        book.setListOfComments(comments);
         book.setYear(year);
         return book;
     }
@@ -133,13 +133,13 @@ public class BookServiceHelper {
         String comment = helper.getFromUser();
         if (comment.isEmpty()) {
             try {
-                return bookRepo.findById(ibOfBook).orElseThrow().getListOfComment();
+                return bookRepo.findById(ibOfBook).orElseThrow().getListOfComments();
             } catch (NoSuchElementException | NullPointerException e) {
                 return new ArrayList<>();
             }
         } else {
             val comm = Comment.builder().commentForBook(comment).build();
-            List<Comment> comments = bookRepo.findById(ibOfBook).orElseThrow().getListOfComment();
+            List<Comment> comments = bookRepo.findById(ibOfBook).orElseThrow().getListOfComments();
             comments.add(comm);
             return comments;
         }

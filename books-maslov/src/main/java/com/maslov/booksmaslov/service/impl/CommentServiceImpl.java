@@ -1,96 +1,63 @@
 package com.maslov.booksmaslov.service.impl;
 
-import com.maslov.booksmaslov.domain.Book;
 import com.maslov.booksmaslov.domain.Comment;
-import com.maslov.booksmaslov.repository.BookRepo;
-import com.maslov.booksmaslov.repository.CommentRepo;
+import com.maslov.booksmaslov.repository.BookDao;
+import com.maslov.booksmaslov.repository.CommentDao;
 import com.maslov.booksmaslov.service.CommentService;
 import com.maslov.booksmaslov.service.ScannerHelper;
+import com.maslov.booksmaslov.service.ServiceHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 @Slf4j
 public class CommentServiceImpl implements CommentService {
 
     private final ScannerHelper helper;
-    private final BookRepo bookRepo;
-    private final CommentRepo commentRepo;
+    private final BookDao bookDao;
+    private final CommentDao commentDao;
 
-    public CommentServiceImpl(ScannerHelper helper, BookRepo bookRepo, CommentRepo commentRepo) {
+    private final ServiceHelper serviceHelper;
+
+    public CommentServiceImpl(ScannerHelper helper, BookDao bookDao, CommentDao commentDao, ServiceHelper serviceHelper) {
         this.helper = helper;
-        this.bookRepo = bookRepo;
-        this.commentRepo = commentRepo;
+        this.bookDao = bookDao;
+        this.commentDao = commentDao;
+        this.serviceHelper = serviceHelper;
     }
 
-    @Override
     @Transactional
-    public List<Comment> createComment() {
-        long idForBook = getIdForBook();
-        helper.getEmptyString();
+    @Override
+    public Set<Comment> createComment() {
         System.out.println("Enter your comment");
-        Comment comm = new Comment(0, helper.getFromUser());
-        Comment addedComment = commentRepo.save(comm);
-        Book bookFromDB = bookRepo.findById(idForBook).orElseThrow();
-        List<Comment> commentList = bookFromDB.getListOfComment();
+        String comm = helper.getFromUser();
+        Comment addedComment = commentDao.createComment(comm);
+        Set<Comment> commentList = new HashSet<>();
         commentList.add(addedComment);
-        Book book = Book.builder()
-                .name(bookFromDB.getName())
-                .genre(bookFromDB.getGenre())
-                .year(bookFromDB.getYear())
-                .author(bookFromDB.getAuthor())
-                .listOfComment(commentList)
-                .build();
-        BeanUtils.copyProperties(book, bookFromDB, "id");
-        bookRepo.save(bookFromDB);
         return commentList;
     }
 
-    @Override
     @Transactional
-    public List<Comment> updateComment() {
-        long idForBook = getIdForBook();
-        long idComment = getCommentId(idForBook);
-        helper.getEmptyString();
-        Comment commentFromDB = commentRepo.findById(idComment).orElseThrow();
+    @Override
+    public Set<Comment> updateComment() {
+        int idForBook = serviceHelper.getIdForBook();
+        int idComment = serviceHelper.getCommentId(idForBook);
         System.out.println("Enter correct comment");
         String newComment = helper.getFromUser();
-        Comment comment = Comment.builder().commentForBook(newComment).build();
-        BeanUtils.copyProperties(comment, commentFromDB, "id");
-        commentRepo.save(commentFromDB);
-        return bookRepo.findById(idForBook).orElseThrow().getListOfComment();
+        commentDao.updateComment(new Comment(idComment, newComment));
+        return bookDao.getBookById(idForBook).orElseThrow().getComments();
     }
 
     @Override
-    public List<Comment> deleteComment() {
-        long idForBook = getIdForBook();
-        long idForComment = getCommentId(idForBook);
-        Comment comment = commentRepo.findById(idForComment).orElseThrow();
-        commentRepo.deleteById(comment.getId());
-        return bookRepo.findById(idForBook).orElseThrow().getListOfComment();
-    }
-
-    private int getIdForBook() {
-        System.out.println("Enter name for book");
-        String nameOfBook = helper.getFromUser();
-        List<Book> listOfBooks = bookRepo.getBooksByName(nameOfBook);
-        for (Book b : listOfBooks) {
-            System.out.println(b);
-        }
-        System.out.println("Find id your book and enter it");
-        return helper.getIdFromUser();
-    }
-
-    private int getCommentId(long idForBook) {
-
-        for (Comment c : bookRepo.findById(idForBook).orElseThrow().getListOfComment()) {
-            System.out.println(c);
-        }
-        System.out.println("Choose and enter id of comment");
-        return helper.getIdFromUser();
+    public Set<Comment> deleteComment() {
+        int idForBook = serviceHelper.getIdForBook();
+        int idForComment = serviceHelper.getCommentId(idForBook);
+        Comment comment = commentDao.getCommentById(idForComment);
+        commentDao.deleteComment(comment);
+        return bookDao.getBookById(idForBook).orElseThrow().getComments();
     }
 }
