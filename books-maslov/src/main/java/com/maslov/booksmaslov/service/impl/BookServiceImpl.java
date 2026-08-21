@@ -42,7 +42,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public void getBook() {
         System.out.println(ENTER_ID);
-        int id = helper.getIdFromUser();
+        long id = helper.getIdFromUser();
         if (id > 0) {
             Book book = bookDao.getBookById(id);
             if (nonNull(book)) {

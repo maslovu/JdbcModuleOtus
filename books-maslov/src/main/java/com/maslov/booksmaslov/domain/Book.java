@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -40,13 +38,11 @@ public class Book {
     @Column(name = "name", nullable = false, unique = true)
     private String name;
 
-    @Fetch(FetchMode.JOIN)
-    @ManyToOne(targetEntity = Genre.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Genre.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "genre_id")
     private Genre genre;
 
-    @Fetch(FetchMode.JOIN)
-    @ManyToOne(targetEntity = YearOfPublish.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = YearOfPublish.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "year_id")
     private YearOfPublish year;
 
@@ -78,5 +74,17 @@ public class Book {
     public void removeAuthors(Author author) {
         this.authors.remove(author);
         author.getBooks().remove(this); // Синхронизируем память Java
+    }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "bookId=" + bookId +
+                ", name='" + name + '\'' +
+                ", genre=" + genre.getName() +
+                ", year=" + year.getDateOfPublish() +
+                ", authors=" + authors +
+                ", comments=" + comments +
+                '}';
     }
 }

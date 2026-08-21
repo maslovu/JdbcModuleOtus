@@ -25,4 +25,12 @@ public class YearOfPublish {
     public YearOfPublish(String dateOfPublish) {
         this.dateOfPublish = dateOfPublish;
     }
+
+    @Override
+    public String toString() {
+        return "YearOfPublish{" +
+                "id=" + id +
+                ", dateOfPublish='" + dateOfPublish + '\'' +
+                '}';
+    }
 }
