@@ -14,6 +14,10 @@ public class ScannerHelper {
     }
 
     public String getFromUser() {
-        return scanner.next();
+        return scanner.nextLine();
+    }
+
+    public String getEmptyString() {
+        return scanner.nextLine();
     }
 }

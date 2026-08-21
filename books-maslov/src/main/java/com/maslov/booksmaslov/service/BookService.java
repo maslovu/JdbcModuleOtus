@@ -3,6 +3,7 @@ package com.maslov.booksmaslov.service;
 import com.maslov.booksmaslov.domain.Book;
 import com.maslov.booksmaslov.domain.Comment;
 
+import java.util.List;
 import java.util.Set;
 
 public interface BookService {
@@ -16,5 +17,5 @@ public interface BookService {
 
     void delBook();
 
-    Set<Comment> getComments();
+    List<Comment> getComments();
 }
