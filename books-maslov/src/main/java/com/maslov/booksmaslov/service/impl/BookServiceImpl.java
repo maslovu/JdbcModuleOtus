@@ -5,6 +5,7 @@ import com.maslov.booksmaslov.domain.Book;
 import com.maslov.booksmaslov.domain.Comment;
 import com.maslov.booksmaslov.domain.Genre;
 import com.maslov.booksmaslov.domain.YearOfPublish;
+import com.maslov.booksmaslov.repository.AuthorDao;
 import com.maslov.booksmaslov.repository.BookDao;
 import com.maslov.booksmaslov.service.BookService;
 import com.maslov.booksmaslov.service.ScannerHelper;
@@ -13,8 +14,7 @@ import lombok.val;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,11 +29,13 @@ public class BookServiceImpl implements BookService {
     private final String GET_ALL = "Enter command 'getall' for search your book in list";
 
     private final BookDao bookDao;
+    private final AuthorDao authorDao;
 
     private final ScannerHelper helper;
 
-    public BookServiceImpl(BookDao bookDao, ScannerHelper helper) {
+    public BookServiceImpl(BookDao bookDao, AuthorDao authorDao, AuthorDao authorDao1, ScannerHelper helper) {
         this.bookDao = bookDao;
+        this.authorDao = authorDao1;
         this.helper = helper;
     }
 
@@ -42,7 +44,7 @@ public class BookServiceImpl implements BookService {
         System.out.println(ENTER_ID);
         int id = helper.getIdFromUser();
         if (id > 0) {
-            Book book = bookDao.getBookById(id).get();
+            Book book = bookDao.getBookById(id);
             if (nonNull(book)) {
                 System.out.println(book);
             } else {
@@ -68,18 +70,31 @@ public class BookServiceImpl implements BookService {
         System.out.println("Enter name of the book");
         String name = helper.getFromUser();
         System.out.println("Enter name of the author");
-        Author authorAr = new Author(0, helper.getFromUser());
-        val author = Collections.singletonList(authorAr);
+        String authorFromUser = helper.getAuthorsFromUser();
+        Set<String> authors = Stream.of(authorFromUser.split(","))
+                .map(String::new)
+                .collect(Collectors.toSet());
         System.out.println("Enter years of publish");
         String yearStr = helper.getFromUser();
-        val year = new YearOfPublish(0, yearStr);
+        val year = new YearOfPublish(yearStr);
         System.out.println("Enter name of the genre");
         String genreStr = helper.getFromUser();
-        val genre = new Genre(0, genreStr);
+        val genre = new Genre(genreStr);
         System.out.println("You can add comment to this book");
-        val comment = new Comment(0, helper.getFromUser());
+        val comment = new Comment(helper.getFromUser());
         book.setName(name);
-        book.setAuthor(author);
+        Set<Author> setAuthors = new HashSet<>();
+        for (var author : authors) {
+            try {
+                setAuthors.add(authorDao.getByName(author));
+            } catch (RuntimeException e) {
+                setAuthors.add(new Author(author));
+            }
+        }
+        for (var a : setAuthors) {
+            book.addAuthors(a);
+        }
+        //todo fix non unique
         book.setYear(year);
         book.setGenre(genre);
         book.addComment(comment);
@@ -94,16 +109,26 @@ public class BookServiceImpl implements BookService {
         if (id > 0) {
             System.out.println("Enter correct name of the book");
             String name = helper.getFromUser();
-            System.out.println("Enter correct name of the author");
-            String author = helper.getFromUser();
-            System.out.println("Enter correct author_id of the book");
-            int authorId = helper.getIdFromUser();
-            Book bookFromDB = bookDao.getBookById(id).orElseThrow();
-            bookFromDB.setName(name);
-            List<Author> authors = Stream.of(author.split(","))
-                    .map(s -> new Author(authorId, s))
-                    .collect(Collectors.toList());
-            bookFromDB.setAuthor(authors);
+            System.out.println("Enter correct name or names of the authors of the book");
+            String authorFromUser = helper.getAuthorsFromUser();
+            Set<String> authors = Stream.of(authorFromUser.split(","))
+                    .map(String::new)
+                    .collect(Collectors.toSet());
+            Book bookFromDB = bookDao.getBookById(id);
+            if (!name.isEmpty()) {
+                bookFromDB.setName(name);
+            }
+
+            Set<Author> setAuthors = new HashSet<>();
+            for (var author : authors) {
+                try {
+                    setAuthors.add(authorDao.getByName(author));
+                } catch (RuntimeException e) {
+                    setAuthors.add(new Author(author));
+                }
+            }
+            bookFromDB.setAuthors(setAuthors);
+
             bookDao.updateBook(bookFromDB);
         } else {
             System.out.println(GET_ALL);
@@ -115,7 +140,7 @@ public class BookServiceImpl implements BookService {
         System.out.println(ENTER_ID);
         int id = helper.getIdFromUser();
         if (id > 0) {
-            bookDao.deleteBook(bookDao.getBookById(id).orElseThrow());
+            bookDao.deleteBook(bookDao.getBookById(id));
             log.info("Book deleted successfully");
         } else {
             System.out.println(GET_ALL);
@@ -127,7 +152,7 @@ public class BookServiceImpl implements BookService {
     public Set<Comment> getComments() {
         System.out.println(ENTER_ID);
         int id = helper.getIdFromUser();
-        var comments = bookDao.getBookById(id).orElseThrow().getComments();
+        var comments = bookDao.getBookById(id).getComments();
         System.out.println(comments);
         return comments;
     }

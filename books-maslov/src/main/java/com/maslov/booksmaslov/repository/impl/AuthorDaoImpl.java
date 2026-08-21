@@ -12,9 +12,12 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.maslov.booksmaslov.sql.SQLConstants.GET_ALL_AUTHORS;
 import static com.maslov.booksmaslov.sql.SQLConstants.GET_AUTHOR_BY_NAME;
+import static java.util.Optional.ofNullable;
 
 @Component
 @Slf4j
@@ -28,21 +31,21 @@ public class AuthorDaoImpl implements AuthorDao {
     }
 
     @Override
-    public List<Author> getAllAuthors() {
+    public Set<Author> getAllAuthors() {
         var query = em.createQuery(GET_ALL_AUTHORS, Author.class);
-        return query.getResultList();
+        return query.getResultStream().collect(Collectors.toSet());
     }
 
     @Override
-    public List<Author> getByName(String name) {
+    public Author getByName(String name) {
         TypedQuery<Author> query = em.createQuery(GET_AUTHOR_BY_NAME, Author.class);
         query.setParameter("author_name", name);
         return checkResult(query, name);
     }
 
     @Override
-    public Optional<Author> getAuthorById(long id) {
-        return Optional.ofNullable(em.find(Author.class, id));
+    public Author getAuthorById(long id) {
+        return em.find(Author.class, id);
     }
 
     @Override
@@ -55,9 +58,9 @@ public class AuthorDaoImpl implements AuthorDao {
         return em.merge(author);
     }
 
-    private List<Author> checkResult(TypedQuery<Author> query, String name) {
+    private Author checkResult(TypedQuery<Author> query, String name) {
         try {
-            return query.getResultList();
+            return query.getSingleResult();
         } catch (NoResultException e) {
             log.warn("Has not author with name: {}", name);
             throw new MaslovBookException(String.format("Has not author with name %s", name));

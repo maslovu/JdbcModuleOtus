@@ -16,4 +16,13 @@ public class ScannerHelper {
     public String getFromUser() {
         return scanner.next();
     }
+
+    public String getAuthorsFromUser() {
+        String input = "";
+        scanner.nextLine();
+        if (scanner.hasNextLine()) {
+            input = scanner.nextLine();
+        }
+        return input;
+    }
 }

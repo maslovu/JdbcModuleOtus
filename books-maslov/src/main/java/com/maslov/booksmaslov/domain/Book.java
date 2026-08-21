@@ -20,7 +20,6 @@ import javax.persistence.NamedEntityGraph;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -29,7 +28,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Table(name = "books")
 @Entity
-@NamedEntityGraph(name = "author-entity-graph", attributeNodes = {@NamedAttributeNode("author")})
+@NamedEntityGraph(name = "author-entity-graph", attributeNodes = {@NamedAttributeNode("authors")})
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,7 +50,7 @@ public class Book {
     @ManyToMany(targetEntity = Author.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @JoinTable(name = "books_authors", joinColumns = {@JoinColumn(name = "book_id")},
             inverseJoinColumns = {@JoinColumn(name = "author_id")})
-    private List<Author> author;
+    private Set<Author> authors = new HashSet<>();
 
     @Getter
     @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -66,5 +65,15 @@ public class Book {
     public void removeComment(Comment comment) {
         this.comments.remove(comment);
         comment.setBook(null);
+    }
+
+    public void addAuthors(Author author) {
+        this.authors.add(author);
+        author.getBooks().add(this); // Синхронизируем память Java
+    }
+
+    public void removeAuthors(Author author) {
+        this.authors.remove(author);
+        author.getBooks().remove(this); // Синхронизируем память Java
     }
 }

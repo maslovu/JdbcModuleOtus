@@ -27,8 +27,7 @@ public class Comment {
     @JoinColumn(name = "book_id", nullable = false) // Имя колонки FK в таблице book
     private Book book;
 
-    public Comment(long commentId, String comment) {
-        this.commentId = commentId;
+    public Comment(String comment) {
         this.comment = comment;
     }
 }

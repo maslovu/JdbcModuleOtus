@@ -35,7 +35,7 @@ public class CommentDaoImpl implements CommentDao {
 
     @Override
     public Comment createComment(String comment) {
-        Comment comm = new Comment(0, comment);
+        Comment comm = new Comment(comment);
         log.info("Created new Comment");
         em.persist(comm);
         return comm;

@@ -45,11 +45,10 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Set<Comment> updateComment() {
         int idForBook = serviceHelper.getIdForBook();
-        int idComment = serviceHelper.getCommentId(idForBook);
         System.out.println("Enter correct comment");
         String newComment = helper.getFromUser();
-        commentDao.updateComment(new Comment(idComment, newComment));
-        return bookDao.getBookById(idForBook).orElseThrow().getComments();
+        commentDao.updateComment(new Comment(newComment));
+        return bookDao.getBookById(idForBook).getComments();
     }
 
     @Override
@@ -58,6 +57,6 @@ public class CommentServiceImpl implements CommentService {
         int idForComment = serviceHelper.getCommentId(idForBook);
         Comment comment = commentDao.getCommentById(idForComment);
         commentDao.deleteComment(comment);
-        return bookDao.getBookById(idForBook).orElseThrow().getComments();
+        return bookDao.getBookById(idForBook).getComments();
     }
 }

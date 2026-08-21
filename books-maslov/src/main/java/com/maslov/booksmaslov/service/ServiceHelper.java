@@ -35,7 +35,7 @@ public class ServiceHelper {
 
     public int getCommentId(int idForBook) {
         System.out.println("Choose and enter id of comment");
-        for (Comment c : bookDao.getBookById(idForBook).get().getComments()) {
+        for (Comment c : bookDao.getBookById(idForBook).getComments()) {
             System.out.println(c);
         }
         return helper.getIdFromUser();

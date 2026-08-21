@@ -12,7 +12,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "genres")
@@ -24,4 +23,7 @@ public class Genre {
     @Column(name = "name", nullable = false, unique = true)
     private String name;
 
+    public Genre(String name) {
+        this.name = name;
+    }
 }

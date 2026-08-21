@@ -13,7 +13,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import java.util.List;
-import java.util.Optional;
 
 import static com.maslov.booksmaslov.sql.SQLConstants.GET_ALL_BOOKS;
 import static com.maslov.booksmaslov.sql.SQLConstants.SELECT_BOOK_BY_NAME;
@@ -22,6 +21,7 @@ import static com.maslov.booksmaslov.sql.SQLConstants.SELECT_BOOK_BY_NAME;
 @RequiredArgsConstructor
 @Slf4j
 public class BookDaoImpl implements BookDao {
+
     @PersistenceContext
     private final EntityManager em;
 
@@ -36,8 +36,8 @@ public class BookDaoImpl implements BookDao {
     }
 
     @Override
-    public Optional<Book> getBookById(long id) {
-        return Optional.ofNullable(em.find(Book.class, id));
+    public Book getBookById(long id) {
+        return em.find(Book.class, id);
     }
 
     @Override
@@ -67,8 +67,8 @@ public class BookDaoImpl implements BookDao {
         try {
             return query.getResultList();
         } catch (NoResultException e) {
-            log.warn("Has not author with name: {}", name);
-            throw new MaslovBookException(String.format("Has not author with name %s", name));
+            log.warn("Has not book with name: {}", name);
+            throw new MaslovBookException(String.format("Has not book with name %s", name));
         }
     }
 }

@@ -56,12 +56,12 @@ class BookServiceImplTest {
 
     @Test
     void createBook() {
-        List<Author> authors = new ArrayList<>();
-        authors.add(new Author(0, "Gorky"));
+        Set<Author> authors = new HashSet<>();
+        authors.add(new Author("Gorky"));
         Set<Comment> comments = new HashSet<Comment>();
-        comments.add(new Comment(0, "Gorky"));
-        Book book = new Book(0, "Gorky", new Genre(0, "Gorky"),
-                new YearOfPublish(0, "Gorky"), authors, comments);
+        comments.add(new Comment("Gorky"));
+        Book book = new Book(0, "Gorky", new Genre("Gorky"),
+                new YearOfPublish("Gorky"), authors, comments);
 
         when(scanner.getFromUser()).thenReturn("any()");
         when(scanner.getFromUser()).thenReturn("ex");
@@ -75,13 +75,13 @@ class BookServiceImplTest {
 
     @Test
     void updateBook() {
-        Book book = new Book(1, "as", new Genre(), new YearOfPublish(), new ArrayList<>(), new HashSet<>());
+        Book book = new Book(1, "as", new Genre(), new YearOfPublish(), new HashSet<>(), new HashSet<>());
 
         when(scanner.getIdFromUser()).thenReturn(1);
         when(scanner.getFromUser()).thenReturn("anyString(");
         when(scanner.getFromUser()).thenReturn("asadada");
         when(scanner.getIdFromUser()).thenReturn(1);
-        when(bookDao.getBookById(1)).thenReturn(Optional.of(new Book()));
+        when(bookDao.getBookById(1)).thenReturn(new Book());
         when(bookDao.updateBook(new Book())).thenReturn(new Book());
 
         service.updateBook();
@@ -93,7 +93,7 @@ class BookServiceImplTest {
     @Test
     void delBook() {
         when(scanner.getIdFromUser()).thenReturn(1);
-        when(bookDao.getBookById(1)).thenReturn(Optional.of(new Book()));
+        when(bookDao.getBookById(1)).thenReturn(new Book());
 
         service.delBook();
 

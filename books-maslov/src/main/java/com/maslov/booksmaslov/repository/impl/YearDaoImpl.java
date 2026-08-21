@@ -5,8 +5,6 @@ import com.maslov.booksmaslov.exception.MaslovBookException;
 import com.maslov.booksmaslov.repository.YearDao;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -17,7 +15,6 @@ import java.util.Optional;
 
 import static com.maslov.booksmaslov.sql.SQLConstants.GET_ALL_YEARS;
 import static com.maslov.booksmaslov.sql.SQLConstants.GET_YEAR_BY_DATE;
-import static java.util.Objects.isNull;
 
 @Component
 @Slf4j

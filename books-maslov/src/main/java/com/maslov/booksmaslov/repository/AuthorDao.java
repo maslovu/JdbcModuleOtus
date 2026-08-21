@@ -4,13 +4,14 @@ import com.maslov.booksmaslov.domain.Author;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface AuthorDao {
-    List<Author> getAllAuthors();
+    Set<Author> getAllAuthors();
 
-    List<Author> getByName(String name);
+    Author getByName(String name);
 
-    Optional<Author> getAuthorById(long id);
+    Author getAuthorById(long id);
 
     Author createAuthor(Author author);
 }
