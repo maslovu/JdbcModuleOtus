@@ -40,7 +40,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public void getBook() {
         System.out.println(ENTER_ID);
         long id = helper.getIdFromUser();
