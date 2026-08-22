@@ -40,6 +40,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional
     public void getBook() {
         System.out.println(ENTER_ID);
         long id = helper.getIdFromUser();
