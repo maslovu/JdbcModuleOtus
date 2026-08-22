@@ -6,8 +6,14 @@ public class SQLConstants {
 
     public static final String GET_ALL_BOOKS = "select b from Book b";
     public static final String SELECT_BOOK_BY_NAME = "select b from Book b where b.name =:name";
-    public static final String SELECT_BOOK_BY_ID = "SELECT b FROM Book b LEFT JOIN FETCH b.authors " +
-            "LEFT JOIN FETCH b.genre LEFT JOIN FETCH b.year LEFT JOIN FETCH b.comments WHERE b.id = :id";
+    public static final String SELECT_BOOK_META_BY_ID = "SELECT b FROM Book b " +
+            "LEFT JOIN FETCH b.authors " +
+            "LEFT JOIN FETCH b.genre " +
+            "LEFT JOIN FETCH b.year " +
+            "WHERE b.id = :id";
+    public static final String SELECT_BOOK_COMMENTS_BY_ID = "SELECT b FROM Book b " +
+            "LEFT JOIN FETCH b.comments " +
+            "WHERE b.id = :id";
     public static final String GET_ALL_GENRES = "select g from Genre g";
     public static final String GET_GENRE_BY_NAME = "select g from Genre g where g.name =:name";
 
