@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.util.Set;
 
 @Service
@@ -32,23 +31,25 @@ public class CommentServiceImpl implements CommentService {
 
     @Transactional
     @Override
-    public Set<Comment> createComment() {
-        System.out.println("Enter your comment");
-        String comm = helper.getFromUser();
-        Comment addedComment = commentDao.createComment(comm);
-        Set<Comment> commentList = new HashSet<>();
-        commentList.add(addedComment);
-        return commentList;
+    public Comment createComment() {
+        int idForBook = serviceHelper.getIdForBook();
+        System.out.println("Enter correct comment");
+        String comment = helper.getDataWithSpaceFromUser();
+        var newComment =  new Comment(comment);
+        bookDao.getBookById(idForBook).addChild(newComment);
+        return newComment;
     }
 
     @Transactional
     @Override
-    public Set<Comment> updateComment() {
+    public void updateComment() {
         int idForBook = serviceHelper.getIdForBook();
+        int idForComment = serviceHelper.getCommentId(idForBook);
+        Comment comment = commentDao.getCommentById(idForComment);
         System.out.println("Enter correct comment");
-        String newComment = helper.getFromUser();
-        commentDao.updateComment(new Comment(newComment));
-        return bookDao.getBookById(idForBook).getComments();
+        String getComment = helper.getDataWithSpaceFromUser();
+        comment.setComment(getComment);
+        commentDao.updateComment(comment);
     }
 
     @Override

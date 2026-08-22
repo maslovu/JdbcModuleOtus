@@ -41,4 +41,14 @@ public class CommandForShell {
     public void getAllComments() {
         service.getComments();
     }
+
+    @ShellMethod(value = "create comment for book", key = "create")
+    public void createComment() {
+        commentService.createComment();
+    }
+
+    @ShellMethod(value = "update comment for book", key = "updCom")
+    public void updateComment() {
+        commentService.updateComment();
+    }
 }

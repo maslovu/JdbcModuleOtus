@@ -33,6 +33,6 @@ public class Comment {
 
     @Override
     public String toString() {
-        return comment;
+        return commentId + ": " + comment;
     }
 }

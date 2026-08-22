@@ -17,7 +17,7 @@ public class ScannerHelper {
         return scanner.next();
     }
 
-    public String getAuthorsFromUser() {
+    public String getDataWithSpaceFromUser() {
         String input = "";
         scanner.nextLine();
         if (scanner.hasNextLine()) {

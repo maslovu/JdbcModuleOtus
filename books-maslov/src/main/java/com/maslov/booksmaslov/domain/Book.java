@@ -56,6 +56,11 @@ public class Book {
     //указываем, если коммент не должен знать о книге @JoinColumn(name = "book_id")
     private Set<Comment> comments = new HashSet<>();
 
+    public void addChild(Comment child) {
+        this.comments.add(child);
+        child.setBook(this); // Важно синхронизировать обратную связь
+    }
+
     public void addComment(Comment comment) {
         this.comments.add(comment);
         comment.setBook(this);

@@ -71,7 +71,7 @@ public class BookServiceImpl implements BookService {
         System.out.println("Enter name of the book");
         String name = helper.getFromUser();
         System.out.println("Enter name of the author");
-        String authorFromUser = helper.getAuthorsFromUser();
+        String authorFromUser = helper.getDataWithSpaceFromUser();
         Set<String> authors = Stream.of(authorFromUser.split(","))
                 .map(String::new)
                 .collect(Collectors.toSet());
@@ -104,7 +104,7 @@ public class BookServiceImpl implements BookService {
             System.out.println("Enter correct name of the book");
             String name = helper.getFromUser();
             System.out.println("Enter correct name or names of the authors of the book");
-            String authorFromUser = helper.getAuthorsFromUser();
+            String authorFromUser = helper.getFromUser();
             Set<String> authors = Stream.of(authorFromUser.split(","))
                     .map(String::new)
                     .collect(Collectors.toSet());
