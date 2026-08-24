@@ -13,7 +13,7 @@ public class YearOfPublish {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "year", nullable = false, unique = true)
+    @Column(name = "year", unique = true, nullable = false)
     private String dateOfPublish;
 
     public YearOfPublish(String dateOfPublish) {

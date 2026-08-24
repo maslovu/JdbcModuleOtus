@@ -8,6 +8,8 @@ import com.maslov.booksmaslov.exception.NoBookException;
 import com.maslov.booksmaslov.model.BookDto;
 import com.maslov.booksmaslov.repository.AuthorRepo;
 import com.maslov.booksmaslov.repository.BookRepo;
+import com.maslov.booksmaslov.repository.GenreRepo;
+import com.maslov.booksmaslov.repository.YearRepo;
 import com.maslov.booksmaslov.service.BookService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,18 +28,22 @@ import static java.util.Objects.nonNull;
 @Slf4j
 public class BookServiceImpl implements BookService {
 
-    private final BookRepo bookDao;
-    private final AuthorRepo authorDao;
+    private final BookRepo bookRepo;
+    private final AuthorRepo authorRepo;
+    private final GenreRepo genreRepo;
+    private final YearRepo yearRepo;
 
-    public BookServiceImpl(BookRepo bookDao, AuthorRepo authorDao) {
-        this.bookDao = bookDao;
-        this.authorDao = authorDao;
+    public BookServiceImpl(BookRepo bookRepo, AuthorRepo authorRepo, GenreRepo genreRepo, YearRepo yearRepo) {
+        this.bookRepo = bookRepo;
+        this.authorRepo = authorRepo;
+        this.genreRepo = genreRepo;
+        this.yearRepo = yearRepo;
     }
 
     @Override
     @Transactional(readOnly = true)
     public Book getBook(long id) {
-        Book book = bookDao.getBookById(id);
+        Book book = bookRepo.getBookById(id);
         if (nonNull(book)) {
             return book;
         } else {
@@ -47,16 +53,13 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public void getAllBook() {
-        List<Book> books = bookDao.getAllBook();
-        for (Book book : books) {
-            System.out.println(book);
-        }
+    public List<Book> getAllBook() {
+        return bookRepo.getAllBook();
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
-    public Book createBook(BookDto bookDto) {
+    public BookDto createBook(BookDto bookDto) {
         Book book = new Book();
         String title = bookDto.title();
         String authorFromUser = bookDto.authors();
@@ -68,29 +71,41 @@ public class BookServiceImpl implements BookService {
         String genreStr = bookDto.genre();
         var genre = new Genre(genreStr);
         book.setTitle(title);
+        //todo fix non unique
         Set<Author> setAuthors = setAuthors(authors);
         for (var a : setAuthors) {
             book.addAuthors(a);
         }
         //todo fix non unique
-        book.setYear(year);
+        //todo rename some fields in Entities
+        YearOfPublish yearOfPublish = yearRepo.getYearByDate(yearStr).orElseGet(() -> {
+            YearOfPublish newYearOfPublish = new YearOfPublish(yearStr);
+            return yearRepo.createYear(newYearOfPublish);
+        });
+
+        book.setYear(yearOfPublish);
+        //todo fix non unique
+        genreRepo.createGenre(genre);
         book.setGenre(genre);
-        return bookDao.createBook(book);
+        var bookFromDb = bookRepo.createBook(book);
+
+        return new BookDto(bookFromDb.getTitle(), bookFromDb.getAuthors().toString(),
+                bookFromDb.getYear().toString(), bookFromDb.getGenre().toString());
     }
 
     @Transactional
     @Override
-    public void updateBook(long id, BookDto bookDto) {
-        Book bookFromDB = bookDao.getBookById(id);
+    public Book updateBook(long id, BookDto bookDto) {
+        Book bookFromDB = bookRepo.getBookById(id);
 
         mapDtoToEntity(bookDto, bookFromDB);
 
-        bookDao.updateBook(bookFromDB);
+        return bookRepo.updateBook(bookFromDB);
     }
 
     @Override
     public void delBook(long id) {
-        bookDao.deleteBook(bookDao.getBookById(id));
+        bookRepo.deleteBook(bookRepo.getBookById(id));
         log.info("Book deleted successfully");
     }
 
@@ -108,8 +123,9 @@ public class BookServiceImpl implements BookService {
         Set<Author> authorsOfBook = new HashSet<>();
         for (var author : authors) {
             try {
-                authorsOfBook.add(authorDao.getByName(author));
+                authorsOfBook.add(authorRepo.getByName(author));
             } catch (RuntimeException e) {
+                authorRepo.createAuthor(new Author(author));
                 authorsOfBook.add(new Author(author));
             }
         }

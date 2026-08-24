@@ -25,8 +25,6 @@ import java.util.Set;
 
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @Table(name = "books")
 @Entity
 @NamedEntityGraph(name = "author-entity-graph", attributeNodes = {@NamedAttributeNode("authors")})
@@ -35,7 +33,7 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long bookId;
 
-    @Column(name = "name", nullable = false, unique = true)
+    @Column(name = "name", unique = true, nullable = false)
     private String title;
 
     @ManyToOne(targetEntity = Genre.class, fetch = FetchType.LAZY)

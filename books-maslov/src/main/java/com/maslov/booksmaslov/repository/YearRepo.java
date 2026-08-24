@@ -8,9 +8,7 @@ import java.util.Optional;
 public interface YearRepo {
     List<YearOfPublish> getAllYears();
 
-    YearOfPublish getYearByDate(String date);
-
-    Optional<YearOfPublish> getYearById(long id);
+    Optional<YearOfPublish> getYearByDate(String date);
 
     YearOfPublish createYear(YearOfPublish year);
 }

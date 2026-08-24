@@ -1,14 +1,13 @@
 package com.maslov.booksmaslov.repository.impl;
 
 import com.maslov.booksmaslov.domain.YearOfPublish;
-import com.maslov.booksmaslov.exception.MaslovBookException;
 import com.maslov.booksmaslov.repository.YearRepo;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.TypedQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +21,7 @@ public class YearDaoImpl implements YearRepo {
     @PersistenceContext
     private final EntityManager em;
 
+
     public YearDaoImpl(EntityManager em) {
         this.em = em;
     }
@@ -33,33 +33,24 @@ public class YearDaoImpl implements YearRepo {
     }
 
     @Override
-    public YearOfPublish getYearByDate(String year) {
+    public Optional<YearOfPublish> getYearByDate(String year) {
+        YearOfPublish yearOfPublish = null;
         var query = em.createQuery(GET_YEAR_BY_DATE, YearOfPublish.class);
         query.setParameter("year", year);
-        return checkResult(query, year);
+        try {
+            yearOfPublish = query.getSingleResult();
+        } catch (NoResultException ex) {
+            log.error("date not in db, new date will be created in db");
+        }
+        return Optional.ofNullable(yearOfPublish);
     }
 
     @Override
-    public Optional<YearOfPublish> getYearById(long id) {
-        return Optional.ofNullable(em.find(YearOfPublish.class, id));
-    }
-
-    @Override
+    @Transactional
     public YearOfPublish createYear(YearOfPublish year) {
         log.info("Created new Year");
-        if (year.getId() == 0) {
-            em.persist(year);
-            return year;
-        }
-        return em.merge(year);
-    }
-
-    private YearOfPublish checkResult(TypedQuery<YearOfPublish> query, String year) {
-        try {
-            return query.getSingleResult();
-        } catch (NoResultException e) {
-            log.warn("Has not year with name: {}", year);
-            throw new MaslovBookException(String.format("Has not year with name %s", year));
-        }
+        em.persist(year);
+        em.flush();
+        return year;
     }
 }
