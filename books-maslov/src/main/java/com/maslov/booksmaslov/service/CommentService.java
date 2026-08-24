@@ -6,9 +6,9 @@ import java.util.Set;
 
 public interface CommentService {
 
-    Comment createComment();
+    Comment createComment(String comment, int idForBook);
 
-    void updateComment();
+    void updateComment(int idOfComment, String newComment);
 
-    Set<Comment> deleteComment();
+    void deleteComment(int idForBook);
 }

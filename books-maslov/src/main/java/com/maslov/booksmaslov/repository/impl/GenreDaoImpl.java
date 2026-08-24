@@ -2,14 +2,14 @@ package com.maslov.booksmaslov.repository.impl;
 
 import com.maslov.booksmaslov.domain.Genre;
 import com.maslov.booksmaslov.exception.MaslovBookException;
-import com.maslov.booksmaslov.repository.GenreDao;
+import com.maslov.booksmaslov.repository.GenreRepo;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,7 +18,7 @@ import static com.maslov.booksmaslov.sql.SQLConstants.GET_GENRE_BY_NAME;
 
 @Component
 @Slf4j
-public class GenreDaoImpl implements GenreDao {
+public class GenreDaoImpl implements GenreRepo {
 
     @PersistenceContext
     private final EntityManager em;

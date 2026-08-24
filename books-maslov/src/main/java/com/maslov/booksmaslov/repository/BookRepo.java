@@ -4,7 +4,7 @@ import com.maslov.booksmaslov.domain.Book;
 
 import java.util.List;
 
-public interface BookDao {
+public interface BookRepo {
     List<Book> getAllBook();
 
     Book getBookById(long id);

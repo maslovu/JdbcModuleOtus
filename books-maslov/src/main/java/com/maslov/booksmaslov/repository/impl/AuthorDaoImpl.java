@@ -2,14 +2,14 @@ package com.maslov.booksmaslov.repository.impl;
 
 import com.maslov.booksmaslov.domain.Author;
 import com.maslov.booksmaslov.exception.MaslovBookException;
-import com.maslov.booksmaslov.repository.AuthorDao;
+import com.maslov.booksmaslov.repository.AuthorRepo;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,7 +18,7 @@ import static com.maslov.booksmaslov.sql.SQLConstants.GET_AUTHOR_BY_NAME;
 
 @Component
 @Slf4j
-public class AuthorDaoImpl implements AuthorDao {
+public class AuthorDaoImpl implements AuthorRepo {
 
     @PersistenceContext
     private final EntityManager em;

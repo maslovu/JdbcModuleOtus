@@ -4,7 +4,7 @@ import com.maslov.booksmaslov.domain.Author;
 
 import java.util.Set;
 
-public interface AuthorDao {
+public interface AuthorRepo {
     Set<Author> getAllAuthors();
 
     Author getByName(String name);

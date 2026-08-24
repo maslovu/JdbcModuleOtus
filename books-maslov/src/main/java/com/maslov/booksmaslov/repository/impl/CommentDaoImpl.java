@@ -3,20 +3,19 @@ package com.maslov.booksmaslov.repository.impl;
 import com.maslov.booksmaslov.domain.Book;
 import com.maslov.booksmaslov.domain.Comment;
 import com.maslov.booksmaslov.exception.MaslovBookException;
-import com.maslov.booksmaslov.repository.CommentDao;
+import com.maslov.booksmaslov.repository.CommentRepo;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 
 import static java.util.Objects.isNull;
 
 @Slf4j
 @Component
-public class CommentDaoImpl implements CommentDao {
+public class CommentDaoImpl implements CommentRepo {
 
     @PersistenceContext
     private final EntityManager em;

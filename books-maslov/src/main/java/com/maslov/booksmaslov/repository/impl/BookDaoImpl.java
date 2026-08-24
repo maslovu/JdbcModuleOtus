@@ -2,12 +2,16 @@ package com.maslov.booksmaslov.repository.impl;
 
 import com.maslov.booksmaslov.domain.Book;
 import com.maslov.booksmaslov.exception.MaslovBookException;
-import com.maslov.booksmaslov.repository.BookDao;
+import com.maslov.booksmaslov.repository.BookRepo;
+import jakarta.persistence.EntityGraph;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.*;
 import java.util.List;
 
 import static com.maslov.booksmaslov.sql.SQLConstants.*;
@@ -15,7 +19,7 @@ import static com.maslov.booksmaslov.sql.SQLConstants.*;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class BookDaoImpl implements BookDao {
+public class BookDaoImpl implements BookRepo {
 
     @PersistenceContext
     private final EntityManager em;

@@ -1,25 +1,25 @@
 package com.maslov.booksmaslov.domain;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,7 +36,7 @@ public class Book {
     private long bookId;
 
     @Column(name = "name", nullable = false, unique = true)
-    private String name;
+    private String title;
 
     @ManyToOne(targetEntity = Genre.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "genre_id")
@@ -56,14 +56,9 @@ public class Book {
     //указываем, если коммент не должен знать о книге @JoinColumn(name = "book_id")
     private Set<Comment> comments = new HashSet<>();
 
-    public void addChild(Comment child) {
+    public void addComment(Comment child) {
         this.comments.add(child);
         child.setBook(this); // Важно синхронизировать обратную связь
-    }
-
-    public void addComment(Comment comment) {
-        this.comments.add(comment);
-        comment.setBook(this);
     }
 
     public void removeComment(Comment comment) {
@@ -85,7 +80,7 @@ public class Book {
     public String toString() {
         return "Book{" +
                 "bookId=" + bookId +
-                ", name='" + name + '\'' +
+                ", name='" + title + '\'' +
                 ", genre=" + genre.getName() +
                 ", year=" + year.getDateOfPublish() +
                 ", authors=" + authors +

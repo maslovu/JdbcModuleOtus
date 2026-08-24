@@ -2,7 +2,7 @@ package com.maslov.booksmaslov.repository;
 
 import com.maslov.booksmaslov.domain.Comment;
 
-public interface CommentDao {
+public interface CommentRepo {
 
     Comment getCommentById(long id);
 

@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.0</version>
+        <version>3.2.2</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -21,22 +21,47 @@
     </modules>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <java.version>11</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <slf4j.version>1.7.24</slf4j.version>
-        <logback.version>1.2.9</logback.version>
-        <liquibase.version>4.8.0</liquibase.version>
-        <postgresql.version>42.3.3</postgresql.version>
-        <snakeyaml.version>1.26</snakeyaml.version>
-        <hibernate.version>6.1.0.Final</hibernate.version>
+
+        <!-- ОБНОВЛЕНО: Старые версии SLF4J и Logback не поддерживают особенности Java 21 -->
+        <slf4j.version>2.0.12</slf4j.version>
+        <logback.version>1.5.6</logback.version>
+
+        <!-- ОБНОВЛЕНО: Liquibase 4.8.0 физически «не знает» про Java 21 и падает при старте -->
+        <liquibase.version>4.27.0</liquibase.version>
+
+        <!-- ОБНОВЛЕНО: Драйвер для стабильной работы с современными версиями БД -->
+        <postgresql.version>42.7.3</postgresql.version>
+
+        <!-- ОБНОВЛЕНО: В версии 1.26 были критические уязвимости безопасности (CVE) -->
+        <snakeyaml.version>2.2</snakeyaml.version>
+
+        <!-- ОБНОВЛЕНО: Hibernate 6.1 не поддерживает Java 21. Нужна версия минимум 6.4+ -->
+        <hibernate.version>6.4.4.Final</hibernate.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
