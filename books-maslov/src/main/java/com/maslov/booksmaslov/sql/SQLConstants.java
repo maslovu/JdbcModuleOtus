@@ -25,7 +25,4 @@ public class SQLConstants {
 
     public static final String GET_ALL_YEARS = "select y from YearOfPublish y";
     public static final String GET_YEAR_BY_DATE = "select y from YearOfPublish y where y.year =:year";
-
-    public static final String GET_BOOK_FOR_COMMENTS_BY_ID = "select b from Book b where b.id =:id ";
-
 }

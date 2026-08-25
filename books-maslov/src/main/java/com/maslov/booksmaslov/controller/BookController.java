@@ -1,6 +1,5 @@
 package com.maslov.booksmaslov.controller;
 
-import com.maslov.booksmaslov.domain.Book;
 import com.maslov.booksmaslov.model.BookDto;
 import com.maslov.booksmaslov.service.BookService;
 import org.springframework.http.ResponseEntity;

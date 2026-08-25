@@ -61,13 +61,4 @@ public class AuthorRepoImpl implements AuthorRepo {
         }
         return em.merge(author);
     }
-
-//    private Author checkResult(TypedQuery<Author> query, String name) {
-//        try {
-//            return query.getSingleResult();
-//        } catch (NoResultException e) {
-//            log.warn("Has not author with name: {}", name);
-//            throw new MaslovBookException(String.format("Has not author with name %s", name));
-//        }
-//    }
 }

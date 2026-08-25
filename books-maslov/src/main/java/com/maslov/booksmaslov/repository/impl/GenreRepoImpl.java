@@ -59,13 +59,4 @@ public class GenreRepoImpl implements GenreRepo {
         }
         return em.merge(genre);
     }
-
-//    private Optional<Genre> checkResult(TypedQuery<Genre> query, String name) {
-//        try {
-//            return Optional.
-//        } catch (NoResultException e) {
-//            log.warn("Has not author with name: {}", name);
-//            throw new MaslovBookException(String.format("Has not genre with name %s", name));
-//        }
-//    }
 }

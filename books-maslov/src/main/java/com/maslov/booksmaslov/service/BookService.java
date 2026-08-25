@@ -1,6 +1,5 @@
 package com.maslov.booksmaslov.service;
 
-import com.maslov.booksmaslov.domain.Book;
 import com.maslov.booksmaslov.model.BookDto;
 
 import java.util.List;
