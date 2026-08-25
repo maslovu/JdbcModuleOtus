@@ -3,11 +3,12 @@ package com.maslov.booksmaslov.repository;
 import com.maslov.booksmaslov.domain.Book;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface BookRepo {
     List<Book> getAllBook();
 
-    Book getBookById(long id);
+    Optional<Book> getBookById(long id);
 
     List<Book> getBooksByName(String name);
 

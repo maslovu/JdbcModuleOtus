@@ -20,6 +20,14 @@ public class BookMapper {
         return Objects.isNull(dto) ? null : mapper.map(dto, Book.class);
     }
 
+    public Book toEntity(BookDto dto, Book book) {
+        if (Objects.isNull(dto) || Objects.isNull(book)) {
+            return null;
+        }
+        mapper.map(dto, book);
+        return book;
+    }
+
     public BookDto toDto(Book entity) {
         return Objects.isNull(entity) ? null : mapper.map(entity, BookDto.class);
     }

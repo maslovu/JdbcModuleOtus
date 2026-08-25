@@ -40,7 +40,7 @@ public class Author {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Author author = (Author) o;
-        return Objects.equals(name, author.name);
+        return Objects.equals(name.strip(), author.name.strip());
     }
 
     @Override

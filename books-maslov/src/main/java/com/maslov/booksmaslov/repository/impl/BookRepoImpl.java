@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.maslov.booksmaslov.sql.SQLConstants.*;
 
@@ -34,14 +35,23 @@ public class BookRepoImpl implements BookRepo {
         return allBook.getResultList();
     }
 
-    public Book getBookById(long id) {
+    public Optional<Book> getBookById(long id) {
 
         TypedQuery<Book> query = em.createQuery(SELECT_BOOK_META_BY_ID, Book.class)
                 .setParameter("id", id);
+        query.setHint("jakarta.persistence.fetchgraph", em.getEntityGraph("book-meta-graph"));
+
+        List<Book> books = query.getResultList();
+
+        if (books.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Book book = books.getFirst();
 
         em.createQuery(SELECT_BOOK_COMMENTS_BY_ID, Book.class)
-                .setParameter("id", id);
-        return query.getSingleResult();
+                .setParameter("id", id).getResultList();
+        return Optional.ofNullable(book);
     }
 
     @Override
