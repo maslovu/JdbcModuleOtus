@@ -19,7 +19,7 @@ import static com.maslov.booksmaslov.sql.SQLConstants.*;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class BookDaoImpl implements BookRepo {
+public class BookRepoImpl implements BookRepo {
 
     @PersistenceContext
     private final EntityManager em;
@@ -29,7 +29,7 @@ public class BookDaoImpl implements BookRepo {
         EntityGraph<?> entityGraph = em.getEntityGraph("author-entity-graph");
         var allBook = em.createQuery(GET_ALL_BOOKS, Book.class);
 
-        allBook.setHint("javax.persistence.fetchgraph", entityGraph);
+        allBook.setHint("jakarta.persistence.fetchgraph", entityGraph);
 
         return allBook.getResultList();
     }

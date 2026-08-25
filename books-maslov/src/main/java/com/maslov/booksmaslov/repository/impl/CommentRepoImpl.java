@@ -15,12 +15,12 @@ import static java.util.Objects.isNull;
 
 @Slf4j
 @Component
-public class CommentDaoImpl implements CommentRepo {
+public class CommentRepoImpl implements CommentRepo {
 
     @PersistenceContext
     private final EntityManager em;
 
-    public CommentDaoImpl(EntityManager em) {
+    public CommentRepoImpl(EntityManager em) {
         this.em = em;
     }
 

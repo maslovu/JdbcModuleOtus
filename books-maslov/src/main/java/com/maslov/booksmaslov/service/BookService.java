@@ -6,13 +6,13 @@ import com.maslov.booksmaslov.model.BookDto;
 import java.util.List;
 
 public interface BookService {
-    Book getBook(long id);
+    BookDto getBook(long id);
 
-    List<Book> getAllBook();
+    List<BookDto> getAllBook();
 
     BookDto createBook(BookDto bookDto);
 
-    Book updateBook(long bookId, BookDto bookDto);
+    BookDto updateBook(long bookId, BookDto bookDto);
 
     void delBook(long id);
 

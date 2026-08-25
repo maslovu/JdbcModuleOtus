@@ -5,6 +5,7 @@ import com.maslov.booksmaslov.domain.Book;
 import com.maslov.booksmaslov.domain.Genre;
 import com.maslov.booksmaslov.domain.YearOfPublish;
 import com.maslov.booksmaslov.exception.NoBookException;
+import com.maslov.booksmaslov.mapper.BookMapper;
 import com.maslov.booksmaslov.model.BookDto;
 import com.maslov.booksmaslov.repository.AuthorRepo;
 import com.maslov.booksmaslov.repository.BookRepo;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,20 +34,26 @@ public class BookServiceImpl implements BookService {
     private final AuthorRepo authorRepo;
     private final GenreRepo genreRepo;
     private final YearRepo yearRepo;
+    private final BookMapper mapper;
 
-    public BookServiceImpl(BookRepo bookRepo, AuthorRepo authorRepo, GenreRepo genreRepo, YearRepo yearRepo) {
+    public BookServiceImpl(BookRepo bookRepo,
+                           AuthorRepo authorRepo,
+                           GenreRepo genreRepo,
+                           YearRepo yearRepo,
+                           BookMapper mapper) {
         this.bookRepo = bookRepo;
         this.authorRepo = authorRepo;
         this.genreRepo = genreRepo;
         this.yearRepo = yearRepo;
+        this.mapper = mapper;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Book getBook(long id) {
+    public BookDto getBook(long id) {
         Book book = bookRepo.getBookById(id);
         if (nonNull(book)) {
-            return book;
+            return mapper.toDto(book);
         } else {
             log.info("Book with this id {} is not exist", id);
             throw new NoBookException("Book is not exist");
@@ -53,22 +61,25 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<Book> getAllBook() {
-        return bookRepo.getAllBook();
+    public List<BookDto> getAllBook() {
+        List<BookDto> books = new ArrayList<>();
+        for (var b: bookRepo.getAllBook()) {
+            books.add(mapper.toDto(b));
+        }
+        return books;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public BookDto createBook(BookDto bookDto) {
         Book book = new Book();
-        String title = bookDto.title();
-        String authorFromUser = bookDto.authors();
+        String title = bookDto.getTitle();
+        String authorFromUser = bookDto.getAuthors();
         Set<String> authors = Stream.of(authorFromUser.split(","))
                 .map(String::new)
                 .collect(Collectors.toSet());
-        String yearStr = bookDto.year();
-        var year = new YearOfPublish(yearStr);
-        String genreStr = bookDto.genre();
+        String yearStr = bookDto.getYear();
+        String genreStr = bookDto.getGenre();
         var genre = new Genre(genreStr);
         book.setTitle(title);
         //todo fix non unique
@@ -89,18 +100,17 @@ public class BookServiceImpl implements BookService {
         book.setGenre(genre);
         var bookFromDb = bookRepo.createBook(book);
 
-        return new BookDto(bookFromDb.getTitle(), bookFromDb.getAuthors().toString(),
-                bookFromDb.getYear().toString(), bookFromDb.getGenre().toString());
+        return mapper.toDto(bookFromDb);
     }
 
     @Transactional
     @Override
-    public Book updateBook(long id, BookDto bookDto) {
+    public BookDto updateBook(long id, BookDto bookDto) {
         Book bookFromDB = bookRepo.getBookById(id);
 
         mapDtoToEntity(bookDto, bookFromDB);
 
-        return bookRepo.updateBook(bookFromDB);
+        return mapper.toDto(bookRepo.updateBook(bookFromDB));
     }
 
     @Override
@@ -108,16 +118,6 @@ public class BookServiceImpl implements BookService {
         bookRepo.deleteBook(bookRepo.getBookById(id));
         log.info("Book deleted successfully");
     }
-
-//    @Override
-//    @Transactional(readOnly = true)
-//    public Set<Comment> getComments() {
-//        System.out.println(ENTER_ID);
-//        int id = helper.getIdFromUser();
-//        var comments = bookDao.getBookById(id).getComments();
-//        System.out.println(comments);
-//        return comments;
-//    }
 
     private Set<Author> setAuthors(Set<String> authors) {
         Set<Author> authorsOfBook = new HashSet<>();
@@ -133,17 +133,17 @@ public class BookServiceImpl implements BookService {
     }
 
     private void mapDtoToEntity(BookDto book, Book entity) {
-        Set<String> authorsFormUser = Stream.of(book.authors().split(","))
+        Set<String> authorsFormUser = Stream.of(book.getAuthors().split(","))
                 .map(String::new)
                 .collect(Collectors.toSet());
-        if (nonNull(book.title())) {
-            entity.setTitle(book.title());
+        if (nonNull(book.getTitle())) {
+            entity.setTitle(book.getTitle());
         }
-        if (nonNull(book.year())) {
-            entity.setYear(new YearOfPublish(book.year()));
+        if (nonNull(book.getYear())) {
+            entity.setYear(new YearOfPublish(book.getYear()));
         }
-        if (nonNull(book.genre())) {
-            entity.setGenre(new Genre(book.genre()));
+        if (nonNull(book.getGenre())) {
+            entity.setGenre(new Genre(book.getGenre()));
         }
         Set<Author> authors = setAuthors(authorsFormUser);
         entity.setAuthors(authors);

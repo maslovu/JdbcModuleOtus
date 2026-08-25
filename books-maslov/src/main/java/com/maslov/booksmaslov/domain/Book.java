@@ -15,9 +15,7 @@ import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.HashSet;
@@ -31,7 +29,7 @@ import java.util.Set;
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long bookId;
+    private long id;
 
     @Column(name = "name", unique = true, nullable = false)
     private String title;
@@ -77,10 +75,10 @@ public class Book {
     @Override
     public String toString() {
         return "Book{" +
-                "bookId=" + bookId +
+                "bookId=" + id +
                 ", name='" + title + '\'' +
                 ", genre=" + genre.getName() +
-                ", year=" + year.getDateOfPublish() +
+                ", year=" + year.getYear() +
                 ", authors=" + authors +
                 ", comments=" + comments +
                 '}';

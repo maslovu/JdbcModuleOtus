@@ -25,32 +25,31 @@ public class Author {
     private long id;
 
     @Column(name = "author_name", nullable = false, unique = true)
-    private String authorName;
+    private String name;
 
-    // Геттеры, сеттеры, equals/hashCode строго по бизнес-ключу (без коллекции books!)
     // mappedBy указывает на поле 'authors' в классе Book (владельце связи)
     @Getter
     @ManyToMany(mappedBy = "authors")
     private Set<Book> books = new HashSet<>();
 
     public Author(String authorName) {
-        this.authorName = authorName;
+        this.name = authorName;
     }
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Author author = (Author) o;
-        return Objects.equals(authorName, author.authorName);
+        return Objects.equals(name, author.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(authorName);
+        return Objects.hashCode(name);
     }
 
     @Override
     public String toString() {
-        return authorName;
+        return name;
     }
 }

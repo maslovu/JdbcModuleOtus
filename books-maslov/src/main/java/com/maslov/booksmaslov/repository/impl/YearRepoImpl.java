@@ -17,12 +17,12 @@ import static com.maslov.booksmaslov.sql.SQLConstants.GET_YEAR_BY_DATE;
 
 @Component
 @Slf4j
-public class YearDaoImpl implements YearRepo {
+public class YearRepoImpl implements YearRepo {
     @PersistenceContext
     private final EntityManager em;
 
 
-    public YearDaoImpl(EntityManager em) {
+    public YearRepoImpl(EntityManager em) {
         this.em = em;
     }
 

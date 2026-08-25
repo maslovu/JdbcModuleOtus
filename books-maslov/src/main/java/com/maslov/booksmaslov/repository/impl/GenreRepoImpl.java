@@ -18,12 +18,12 @@ import static com.maslov.booksmaslov.sql.SQLConstants.GET_GENRE_BY_NAME;
 
 @Component
 @Slf4j
-public class GenreDaoImpl implements GenreRepo {
+public class GenreRepoImpl implements GenreRepo {
 
     @PersistenceContext
     private final EntityManager em;
 
-    public GenreDaoImpl(EntityManager em) {
+    public GenreRepoImpl(EntityManager em) {
         this.em = em;
     }
 

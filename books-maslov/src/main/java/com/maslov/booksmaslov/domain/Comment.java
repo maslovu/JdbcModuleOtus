@@ -22,7 +22,7 @@ public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
-    private long commentId;
+    private long id;
 
     @Column(name = "comment")
     private String comment;
@@ -40,6 +40,6 @@ public class Comment {
 
     @Override
     public String toString() {
-        return commentId + ": " + comment;
+        return id + ": " + comment;
     }
 }

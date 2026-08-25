@@ -18,12 +18,12 @@ import static com.maslov.booksmaslov.sql.SQLConstants.GET_AUTHOR_BY_NAME;
 
 @Component
 @Slf4j
-public class AuthorDaoImpl implements AuthorRepo {
+public class AuthorRepoImpl implements AuthorRepo {
 
     @PersistenceContext
     private final EntityManager em;
 
-    public AuthorDaoImpl(EntityManager em) {
+    public AuthorRepoImpl(EntityManager em) {
         this.em = em;
     }
 

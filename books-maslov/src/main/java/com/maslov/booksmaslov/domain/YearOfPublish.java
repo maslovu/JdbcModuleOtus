@@ -1,6 +1,11 @@
 package com.maslov.booksmaslov.domain;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,17 +19,14 @@ public class YearOfPublish {
     private long id;
 
     @Column(name = "year", unique = true, nullable = false)
-    private String dateOfPublish;
+    private String year;
 
-    public YearOfPublish(String dateOfPublish) {
-        this.dateOfPublish = dateOfPublish;
+    public YearOfPublish(String year) {
+        this.year = year;
     }
 
     @Override
     public String toString() {
-        return "YearOfPublish{" +
-                "id=" + id +
-                ", dateOfPublish='" + dateOfPublish + '\'' +
-                '}';
+        return "dateOfPublish: " + year;
     }
 }
