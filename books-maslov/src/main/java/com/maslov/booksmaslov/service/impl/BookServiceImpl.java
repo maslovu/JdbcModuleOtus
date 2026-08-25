@@ -105,9 +105,11 @@ public class BookServiceImpl implements BookService {
         return mapper.toDto(updatedBook);
     }
 
+    @Transactional
     @Override
     public void delBook(long id) {
-        bookRepo.deleteBook(bookRepo.getBookById(id));
+        Book book = bookRepo.getBookById(id);
+        bookRepo.deleteBook(book);
         log.info("Book deleted successfully");
     }
 
