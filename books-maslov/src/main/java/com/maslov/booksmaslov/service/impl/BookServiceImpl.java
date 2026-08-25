@@ -100,8 +100,9 @@ public class BookServiceImpl implements BookService {
         Book bookFromDB = bookRepo.getBookById(id);
 
         mapDtoToEntity(bookDto, bookFromDB);
+        Book updatedBook = bookRepo.updateBook(bookFromDB);
 
-        return mapper.toDto(bookRepo.updateBook(bookFromDB));
+        return mapper.toDto(updatedBook);
     }
 
     @Override
@@ -144,10 +145,10 @@ public class BookServiceImpl implements BookService {
             entity.setTitle(book.getTitle());
         }
         if (nonNull(book.getYear())) {
-            entity.setYear(new YearOfPublish(book.getYear()));
+            entity.setYear(getYear(book.getYear()));
         }
         if (nonNull(book.getGenre())) {
-            entity.setGenre(new Genre(book.getGenre()));
+            entity.setGenre(getGenre(book.getGenre()));
         }
         Set<Author> authors = getAuthorsSet(authorsFormUser);
         entity.setAuthors(authors);
