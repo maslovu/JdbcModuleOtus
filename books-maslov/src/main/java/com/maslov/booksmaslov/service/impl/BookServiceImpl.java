@@ -78,26 +78,17 @@ public class BookServiceImpl implements BookService {
         Set<String> authors = Stream.of(authorFromUser.split(","))
                 .map(String::new)
                 .collect(Collectors.toSet());
-        String yearStr = bookDto.getYear();
-        String genreStr = bookDto.getGenre();
-        var genre = new Genre(genreStr);
-        book.setTitle(title);
-        //todo fix non unique
-        Set<Author> setAuthors = setAuthors(authors);
+        String year = bookDto.getYear();
+        String genre = bookDto.getGenre();
+
+        Set<Author> setAuthors = getAuthorsSet(authors);
         for (var a : setAuthors) {
             book.addAuthors(a);
         }
-        //todo fix non unique
-        //todo rename some fields in Entities
-        YearOfPublish yearOfPublish = yearRepo.getYearByDate(yearStr).orElseGet(() -> {
-            YearOfPublish newYearOfPublish = new YearOfPublish(yearStr);
-            return yearRepo.createYear(newYearOfPublish);
-        });
 
-        book.setYear(yearOfPublish);
-        //todo fix non unique
-        genreRepo.createGenre(genre);
-        book.setGenre(genre);
+        book.setTitle(title);
+        book.setYear(getYear(year));
+        book.setGenre(getGenre(genre));
         var bookFromDb = bookRepo.createBook(book);
 
         return mapper.toDto(bookFromDb);
@@ -119,15 +110,28 @@ public class BookServiceImpl implements BookService {
         log.info("Book deleted successfully");
     }
 
-    private Set<Author> setAuthors(Set<String> authors) {
+    private Genre getGenre(String genreStr) {
+        return genreRepo.getGenreByName(genreStr).orElseGet(() -> {
+            Genre newGenre = new Genre(genreStr);
+            return genreRepo.createGenre(newGenre);
+        });
+    }
+
+    private YearOfPublish getYear(String yearStr) {
+        return yearRepo.getYearByDate(yearStr).orElseGet(() -> {
+            YearOfPublish newYearOfPublish = new YearOfPublish(yearStr);
+            return yearRepo.createYear(newYearOfPublish);
+        });
+    }
+
+    private Set<Author> getAuthorsSet(Set<String> authors) {
         Set<Author> authorsOfBook = new HashSet<>();
         for (var author : authors) {
-            try {
-                authorsOfBook.add(authorRepo.getByName(author));
-            } catch (RuntimeException e) {
-                authorRepo.createAuthor(new Author(author));
-                authorsOfBook.add(new Author(author));
-            }
+
+            authorsOfBook.add(authorRepo.getByName(author).orElseGet(() -> {
+                Author newAuthor = new Author(author);
+                return authorRepo.createAuthor(newAuthor);
+            }));
         }
         return authorsOfBook;
     }
@@ -145,7 +149,7 @@ public class BookServiceImpl implements BookService {
         if (nonNull(book.getGenre())) {
             entity.setGenre(new Genre(book.getGenre()));
         }
-        Set<Author> authors = setAuthors(authorsFormUser);
+        Set<Author> authors = getAuthorsSet(authorsFormUser);
         entity.setAuthors(authors);
     }
 }
