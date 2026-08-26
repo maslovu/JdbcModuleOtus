@@ -27,6 +27,6 @@ public class YearOfPublish {
 
     @Override
     public String toString() {
-        return "dateOfPublish: " + year;
+        return year;
     }
 }

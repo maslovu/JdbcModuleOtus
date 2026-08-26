@@ -2,9 +2,11 @@ package com.maslov.booksmaslov.configuration;
 
 import com.maslov.booksmaslov.domain.Author;
 import com.maslov.booksmaslov.domain.Book;
+import com.maslov.booksmaslov.domain.Comment;
 import com.maslov.booksmaslov.domain.Genre;
 import com.maslov.booksmaslov.domain.YearOfPublish;
 import com.maslov.booksmaslov.model.BookDto;
+import com.maslov.booksmaslov.model.CommentDto;
 import com.maslov.booksmaslov.repository.AuthorRepo;
 import com.maslov.booksmaslov.repository.GenreRepo;
 import com.maslov.booksmaslov.repository.YearRepo;
@@ -109,7 +111,7 @@ public class ConfigurationMapper {
             });
         };
 
-        // Настраиваем правила маппинга для класса Book
+        // Настраиваем правила маппинга для класса Book, используется для сложной логики
         TypeMap<BookDto, Book> dtoToEntityMap = mapper.getTypeMap(BookDto.class, Book.class);
         if (dtoToEntityMap == null) {
             dtoToEntityMap = mapper.emptyTypeMap(BookDto.class, Book.class);
@@ -119,6 +121,18 @@ public class ConfigurationMapper {
             m.using(genreStringToGenre).map(BookDto::getGenre, Book::setGenre);
             m.using(yearStringToYear).map(BookDto::getYear, Book::setYear);
             m.map(BookDto::getTitle, Book::setTitle);
+        });
+
+        // 1. Проверяем, существует ли уже TypeMap, чтобы избежать дублирования
+        TypeMap<Comment, CommentDto> commentTypeMap = mapper.getTypeMap(Comment.class, CommentDto.class);
+        if (commentTypeMap == null) {
+            commentTypeMap = mapper.createTypeMap(Comment.class, CommentDto.class);
+        }
+
+        // 2. Добавляем явное правило маппинга
+        commentTypeMap.addMappings(m -> {
+            // Берем ID книги из вложенного объекта Book и мапим в плоское поле bookId в DTO
+            m.map(src -> src.getBook().getId(), CommentDto::setBookId);
         });
 
         return mapper;

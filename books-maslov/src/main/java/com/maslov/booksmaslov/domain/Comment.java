@@ -25,21 +25,22 @@ public class Comment {
     private long id;
 
     @Column(name = "comment")
-    private String comment;
+    private String text;
 
     // Конструкторы, геттеры, сеттеры
     @Setter
     @Getter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false) // Имя колонки FK в таблице book
+//    @JsonBackReference // Это поле НЕ ПОЙДЕТ в JSON комментария. Цикл разорван!
     private Book book;
 
     public Comment(String comment) {
-        this.comment = comment;
+        this.text = comment;
     }
 
     @Override
     public String toString() {
-        return id + ": " + comment;
+        return id + ": " + text;
     }
 }

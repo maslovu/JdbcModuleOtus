@@ -11,6 +11,8 @@ import jakarta.persistence.TypedQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 import static java.util.Objects.isNull;
 
 @Slf4j
@@ -25,18 +27,18 @@ public class CommentRepoImpl implements CommentRepo {
     }
 
     @Override
-    public Comment getCommentById(long id) {
+    public Optional<Comment> getCommentById(long id) {
         if (isNull(em.find(Comment.class, id))) {
             throw new MaslovBookException("No comment for this ID");
         }
-        return em.find(Comment.class, id);
+        return Optional.ofNullable(em.find(Comment.class, id));
     }
 
     @Override
-    public Comment createComment(String comment) {
-        Comment comm = new Comment(comment);
+    public Comment createComment(Comment comm) {
         log.info("Created new Comment");
         em.persist(comm);
+        em.flush();
         return comm;
     }
 
@@ -47,7 +49,10 @@ public class CommentRepoImpl implements CommentRepo {
 
     @Override
     public void deleteComment(Comment comment) {
-        em.remove(em.contains(comment) ? comment : em.merge(comment));
+        // Проверяем: если объект вдруг потерял связь с сессией (detached),
+        // мы сначала привязываем его обратно через merge(), а затем удаляем
+        Comment managedComment = em.contains(comment) ? comment : em.merge(comment);
+        em.remove(managedComment);
     }
 
     private Book checkResult(TypedQuery<Book> query, Long id) {
