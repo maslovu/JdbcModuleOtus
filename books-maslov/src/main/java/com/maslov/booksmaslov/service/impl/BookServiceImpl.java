@@ -8,12 +8,11 @@ import com.maslov.booksmaslov.repository.BookRepo;
 import com.maslov.booksmaslov.service.BookService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -41,15 +40,14 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BookDto> getAllBook() {
-        List<BookDto> books = new ArrayList<>();
-        for (var b: bookRepo.getAllBook()) {
-            books.add(mapper.toDto(b));
-        }
-        return books;
+        return bookRepo.getAllBooks().stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     @Override
     public BookDto createBook(BookDto bookDto) {
         Book book = mapper.toEntity(bookDto);
@@ -60,8 +58,8 @@ public class BookServiceImpl implements BookService {
     @Transactional
     @Override
     public BookDto updateBook(long id, BookDto bookDto) {
-        //todo handle null
-        Book bookFromDB = bookRepo.getBookById(id).get();
+        Book bookFromDB = bookRepo.getBookById(id)
+                .orElseThrow(() -> new NoBookException("Book with id " + id + " does not exist"));
 
         Book book = mapper.toEntity(bookDto, bookFromDB);
         Book updatedBook = bookRepo.updateBook(book);
@@ -72,8 +70,9 @@ public class BookServiceImpl implements BookService {
     @Transactional
     @Override
     public void delBook(long id) {
-        //todo handle null
-        Book book = bookRepo.getBookById(id).get();
+        Book book = bookRepo.getBookById(id)
+                .orElseThrow(() -> new NoBookException("Book with id " + id + " does not exist"));
+
         bookRepo.deleteBook(book);
         log.info("Book deleted successfully");
     }
