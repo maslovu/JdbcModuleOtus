@@ -1,6 +1,5 @@
 package com.maslov.booksmaslov.service;
 
-import com.maslov.booksmaslov.domain.Comment;
 import com.maslov.booksmaslov.model.CommentDto;
 import com.maslov.booksmaslov.model.CommentRequest;
 
