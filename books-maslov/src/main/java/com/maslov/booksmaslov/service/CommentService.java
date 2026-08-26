@@ -1,14 +1,17 @@
 package com.maslov.booksmaslov.service;
 
-import com.maslov.booksmaslov.domain.Comment;
+import com.maslov.booksmaslov.model.CommentDto;
+import com.maslov.booksmaslov.model.CommentRequest;
 
 import java.util.Set;
 
 public interface CommentService {
 
-    Comment createComment();
+    Set<CommentDto> getAllCommentForBook(long idForBook);
 
-    void updateComment();
+    CommentDto createComment(CommentRequest comment, long idForBook);
 
-    Set<Comment> deleteComment();
+    CommentDto updateComment(CommentRequest newComment, long commentId);
+
+    void deleteComment(long idForBook);
 }

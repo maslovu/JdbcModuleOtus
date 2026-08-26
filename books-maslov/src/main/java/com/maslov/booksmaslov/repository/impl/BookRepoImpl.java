@@ -2,20 +2,25 @@ package com.maslov.booksmaslov.repository.impl;
 
 import com.maslov.booksmaslov.domain.Book;
 import com.maslov.booksmaslov.exception.MaslovBookException;
-import com.maslov.booksmaslov.repository.BookDao;
+import com.maslov.booksmaslov.repository.BookRepo;
+import jakarta.persistence.EntityGraph;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.*;
 import java.util.List;
+import java.util.Optional;
 
 import static com.maslov.booksmaslov.sql.SQLConstants.*;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class BookDaoImpl implements BookDao {
+public class BookRepoImpl implements BookRepo {
 
     @PersistenceContext
     private final EntityManager em;
@@ -25,19 +30,28 @@ public class BookDaoImpl implements BookDao {
         EntityGraph<?> entityGraph = em.getEntityGraph("author-entity-graph");
         var allBook = em.createQuery(GET_ALL_BOOKS, Book.class);
 
-        allBook.setHint("javax.persistence.fetchgraph", entityGraph);
+        allBook.setHint("jakarta.persistence.fetchgraph", entityGraph);
 
         return allBook.getResultList();
     }
 
-    public Book getBookById(long id) {
+    public Optional<Book> getBookById(long id) {
 
         TypedQuery<Book> query = em.createQuery(SELECT_BOOK_META_BY_ID, Book.class)
                 .setParameter("id", id);
+        query.setHint("jakarta.persistence.fetchgraph", em.getEntityGraph("book-meta-graph"));
+
+        List<Book> books = query.getResultList();
+
+        if (books.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Book book = books.getFirst();
 
         em.createQuery(SELECT_BOOK_COMMENTS_BY_ID, Book.class)
-                .setParameter("id", id);
-        return query.getSingleResult();
+                .setParameter("id", id).getResultList();
+        return Optional.ofNullable(book);
     }
 
     @Override

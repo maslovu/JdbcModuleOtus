@@ -1,20 +1,18 @@
 package com.maslov.booksmaslov.service;
 
-import com.maslov.booksmaslov.domain.Book;
-import com.maslov.booksmaslov.domain.Comment;
+import com.maslov.booksmaslov.model.BookDto;
 
-import java.util.Set;
+import java.util.List;
 
 public interface BookService {
-    void getBook();
+    BookDto getBook(long id);
 
-    void getAllBook();
+    List<BookDto> getAllBook();
 
-    Book createBook();
+    BookDto createBook(BookDto bookDto);
 
-    void updateBook();
+    BookDto updateBook(long bookId, BookDto bookDto);
 
-    void delBook();
+    void delBook(long id);
 
-    Set<Comment> getComments();
 }

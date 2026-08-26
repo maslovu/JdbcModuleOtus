@@ -5,10 +5,10 @@ import com.maslov.booksmaslov.domain.Genre;
 import java.util.List;
 import java.util.Optional;
 
-public interface GenreDao {
+public interface GenreRepo {
     List<Genre> getAllGenres();
 
-    List<Genre> getGenreByName(String name);
+    Optional<Genre> getGenreByName(String name);
 
     Optional<Genre> getGenreById(long id);
 

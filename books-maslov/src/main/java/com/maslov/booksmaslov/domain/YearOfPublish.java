@@ -1,14 +1,13 @@
 package com.maslov.booksmaslov.domain;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
 @Data
 @NoArgsConstructor
@@ -19,18 +18,15 @@ public class YearOfPublish {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "year", nullable = false, unique = true)
-    private String dateOfPublish;
+    @Column(name = "year", unique = true, nullable = false)
+    private String year;
 
-    public YearOfPublish(String dateOfPublish) {
-        this.dateOfPublish = dateOfPublish;
+    public YearOfPublish(String year) {
+        this.year = year;
     }
 
     @Override
     public String toString() {
-        return "YearOfPublish{" +
-                "id=" + id +
-                ", dateOfPublish='" + dateOfPublish + '\'' +
-                '}';
+        return year;
     }
 }

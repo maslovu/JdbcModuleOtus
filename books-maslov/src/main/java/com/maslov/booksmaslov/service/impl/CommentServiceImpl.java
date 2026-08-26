@@ -1,63 +1,79 @@
 package com.maslov.booksmaslov.service.impl;
 
 import com.maslov.booksmaslov.domain.Comment;
-import com.maslov.booksmaslov.repository.BookDao;
-import com.maslov.booksmaslov.repository.CommentDao;
+import com.maslov.booksmaslov.mapper.CommentMapper;
+import com.maslov.booksmaslov.model.CommentDto;
+import com.maslov.booksmaslov.model.CommentRequest;
+import com.maslov.booksmaslov.repository.BookRepo;
+import com.maslov.booksmaslov.repository.CommentRepo;
 import com.maslov.booksmaslov.service.CommentService;
-import com.maslov.booksmaslov.service.ScannerHelper;
-import com.maslov.booksmaslov.service.ServiceHelper;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class CommentServiceImpl implements CommentService {
 
-    private final ScannerHelper helper;
-    private final BookDao bookDao;
-    private final CommentDao commentDao;
+    private final BookRepo bookRepo;
+    private final CommentRepo commentRepo;
+    private final CommentMapper commentMapper;
 
-    private final ServiceHelper serviceHelper;
+    public CommentServiceImpl(BookRepo bookRepo, CommentRepo commentRepo, CommentMapper mapper) {
+        this.bookRepo = bookRepo;
+        this.commentRepo = commentRepo;
+        this.commentMapper = mapper;
+    }
 
-    public CommentServiceImpl(ScannerHelper helper, BookDao bookDao, CommentDao commentDao, ServiceHelper serviceHelper) {
-        this.helper = helper;
-        this.bookDao = bookDao;
-        this.commentDao = commentDao;
-        this.serviceHelper = serviceHelper;
+    @Override
+    public Set<CommentDto> getAllCommentForBook(long bookId) {
+        var book = bookRepo.getBookById(bookId)
+                .orElseThrow(() -> new EntityNotFoundException("Book not found with id: " + bookId));
+        return book.getComments().stream()
+                .map(commentMapper::toDto)
+                .collect(Collectors.toSet());
     }
 
     @Transactional
     @Override
-    public Comment createComment() {
-        int idForBook = serviceHelper.getIdForBook();
-        System.out.println("Enter correct comment");
-        String comment = helper.getDataWithSpaceFromUser();
-        var newComment =  new Comment(comment);
-        bookDao.getBookById(idForBook).addChild(newComment);
-        return newComment;
+    public CommentDto createComment(CommentRequest comment, long bookId) {
+        var newComment = new Comment(comment.text());
+        var book = bookRepo.getBookById(bookId)
+                .orElseThrow(() -> new EntityNotFoundException("Book not found with id: " + bookId));
+        book.addComment(newComment);
+        var createdComment = commentRepo.createComment(newComment);
+        return commentMapper.toDto(createdComment);
     }
 
     @Transactional
     @Override
-    public void updateComment() {
-        int idForBook = serviceHelper.getIdForBook();
-        int idForComment = serviceHelper.getCommentId(idForBook);
-        Comment comment = commentDao.getCommentById(idForComment);
-        System.out.println("Enter correct comment");
-        String getComment = helper.getDataWithSpaceFromUser();
-        comment.setComment(getComment);
-        commentDao.updateComment(comment);
+    public CommentDto updateComment(CommentRequest newComment, long commentId) {
+        // Объект переходит в состояние Managed (управляется Hibernate)
+        Comment commentFromDb = commentRepo.getCommentById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("Comment not found with id: " + commentId));
+        commentFromDb.setText(newComment.text());
+        // Вызывать явные методы сохранения типа em.merge() необязательно.
+        // Так как метод помечен @Transactional, Hibernate в конце транзакции
+        // сам заметит изменение текста и сгенерирует оптимальный SQL UPDATE.
+
+        // Принудительный flush в репозитории здесь не нужен, так как мы не генерируем новый ID,
+        // он уже есть в объекте commentFromDb.
+        // commentRepo.updateComment(commentFromDb);
+        return commentMapper.toDto(commentFromDb);
     }
 
+    @Transactional
     @Override
-    public Set<Comment> deleteComment() {
-        int idForBook = serviceHelper.getIdForBook();
-        int idForComment = serviceHelper.getCommentId(idForBook);
-        Comment comment = commentDao.getCommentById(idForComment);
-        commentDao.deleteComment(comment);
-        return bookDao.getBookById(idForBook).getComments();
+    public void deleteComment(long commentId) {
+        Comment comment = commentRepo.getCommentById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException("Comment not found with id: " + commentId));
+        if (comment.getBook() != null) {
+            comment.getBook().getComments().remove(comment);
+        }
+        commentRepo.deleteComment(comment);
     }
 }

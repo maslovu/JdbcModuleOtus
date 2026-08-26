@@ -2,11 +2,13 @@ package com.maslov.booksmaslov.repository;
 
 import com.maslov.booksmaslov.domain.Comment;
 
-public interface CommentDao {
+import java.util.Optional;
 
-    Comment getCommentById(long id);
+public interface CommentRepo {
 
-    Comment createComment(String comment);
+    Optional<Comment> getCommentById(long id);
+
+    Comment createComment(Comment comment);
 
     void updateComment(Comment comment);
 

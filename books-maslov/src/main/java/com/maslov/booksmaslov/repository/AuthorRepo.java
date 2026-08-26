@@ -2,12 +2,13 @@ package com.maslov.booksmaslov.repository;
 
 import com.maslov.booksmaslov.domain.Author;
 
+import java.util.Optional;
 import java.util.Set;
 
-public interface AuthorDao {
+public interface AuthorRepo {
     Set<Author> getAllAuthors();
 
-    Author getByName(String name);
+    Optional<Author> getByName(String name);
 
     Author getAuthorById(long id);
 

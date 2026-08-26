@@ -1,10 +1,16 @@
 package com.maslov.booksmaslov.domain;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -19,32 +25,31 @@ public class Author {
     private long id;
 
     @Column(name = "author_name", nullable = false, unique = true)
-    private String authorName;
+    private String name;
 
-    // Геттеры, сеттеры, equals/hashCode строго по бизнес-ключу (без коллекции books!)
     // mappedBy указывает на поле 'authors' в классе Book (владельце связи)
     @Getter
     @ManyToMany(mappedBy = "authors")
     private Set<Book> books = new HashSet<>();
 
     public Author(String authorName) {
-        this.authorName = authorName;
+        this.name = authorName;
     }
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Author author = (Author) o;
-        return Objects.equals(authorName, author.authorName);
+        return Objects.equals(name.strip(), author.name.strip());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(authorName);
+        return Objects.hashCode(name);
     }
 
     @Override
     public String toString() {
-        return authorName;
+        return name;
     }
 }

@@ -1,29 +1,30 @@
 package com.maslov.booksmaslov.repository.impl;
 
 import com.maslov.booksmaslov.domain.Author;
-import com.maslov.booksmaslov.exception.MaslovBookException;
-import com.maslov.booksmaslov.repository.AuthorDao;
+import com.maslov.booksmaslov.repository.AuthorRepo;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.maslov.booksmaslov.sql.SQLConstants.GET_ALL_AUTHORS;
 import static com.maslov.booksmaslov.sql.SQLConstants.GET_AUTHOR_BY_NAME;
+import static java.util.Optional.ofNullable;
 
 @Component
 @Slf4j
-public class AuthorDaoImpl implements AuthorDao {
+public class AuthorRepoImpl implements AuthorRepo {
 
     @PersistenceContext
     private final EntityManager em;
 
-    public AuthorDaoImpl(EntityManager em) {
+    public AuthorRepoImpl(EntityManager em) {
         this.em = em;
     }
 
@@ -34,10 +35,16 @@ public class AuthorDaoImpl implements AuthorDao {
     }
 
     @Override
-    public Author getByName(String name) {
+    public Optional<Author> getByName(String name) {
+        Author author = null;
         TypedQuery<Author> query = em.createQuery(GET_AUTHOR_BY_NAME, Author.class);
         query.setParameter("author_name", name);
-        return checkResult(query, name);
+        try {
+            author = query.getSingleResult();
+        } catch (NoResultException ex) {
+            log.error("author not in db, new author will be created in db");
+        }
+        return ofNullable(author);
     }
 
     @Override
@@ -53,14 +60,5 @@ public class AuthorDaoImpl implements AuthorDao {
             return author;
         }
         return em.merge(author);
-    }
-
-    private Author checkResult(TypedQuery<Author> query, String name) {
-        try {
-            return query.getSingleResult();
-        } catch (NoResultException e) {
-            log.warn("Has not author with name: {}", name);
-            throw new MaslovBookException(String.format("Has not author with name %s", name));
-        }
     }
 }

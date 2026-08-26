@@ -2,110 +2,160 @@ package com.maslov.booksmaslov.service.impl;
 
 import com.maslov.booksmaslov.domain.Author;
 import com.maslov.booksmaslov.domain.Book;
-import com.maslov.booksmaslov.domain.Comment;
 import com.maslov.booksmaslov.domain.Genre;
 import com.maslov.booksmaslov.domain.YearOfPublish;
-import com.maslov.booksmaslov.repository.BookDao;
-import com.maslov.booksmaslov.repository.impl.BookDaoImpl;
+import com.maslov.booksmaslov.exception.NoBookException;
+import com.maslov.booksmaslov.mapper.BookMapper;
+import com.maslov.booksmaslov.model.BookDto;
+import com.maslov.booksmaslov.repository.AuthorRepo;
+import com.maslov.booksmaslov.repository.BookRepo;
+import com.maslov.booksmaslov.repository.GenreRepo;
+import com.maslov.booksmaslov.repository.YearRepo;
 import com.maslov.booksmaslov.service.BookService;
-import com.maslov.booksmaslov.service.ScannerHelper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@Import(BookDaoImpl.class)
-@SpringJUnitConfig(BookServiceImpl.class)
+@SpringBootTest(classes = BookServiceImpl.class)
+//@SpringJUnitConfig(BookServiceImpl.class)
 class BookServiceImplTest {
 
+    @Autowired
+    private BookServiceImpl bookService; // Внедряем тестируемый сервис из контекста
+
     @MockBean
-    private ScannerHelper scanner;
+    private BookRepo bookRepo;
+
     @MockBean
-    private BookDao bookDao;
+    private YearRepo yearRepo;
+
+    @MockBean
+    private GenreRepo genreRepo;
+
+    @MockBean
+    private AuthorRepo authorRepo;
+
+    @MockBean
+    private BookMapper mapper;
+
+    private BookDto inputDto;
+    private BookDto expectedDto;
+    private Author mockAuthor;
+    private Genre mockGenre;
+    private Book mockBookFromDb;
 
     @Autowired
     BookService service;
 
-    @Test
-    void getBook() {
 
-        when(scanner.getIdFromUser()).thenReturn(0);
+    @BeforeEach
+    void setUp() {
+        inputDto = new BookDto();
+        inputDto.setTitle("Java core");
+        inputDto.setAuthors("Lafore");
+        inputDto.setYear("2025");
+        inputDto.setGenre("Non Fiction");
 
-        service.getBook();
+        expectedDto = new BookDto();
+        expectedDto.setTitle("Java core");
+        expectedDto.setAuthors("Lafore");
+        expectedDto.setYear("2025");
+        expectedDto.setGenre("Non Fiction");
 
-        verify(bookDao, Mockito.times(0)).getBookById(1);
+        // Инициализируем базовые объекты заглушек
+        mockAuthor = new Author();
+        mockAuthor.setName("Lafore");
+        mockAuthor.setBooks(new HashSet<>()); // Защита от NullPointerException в addAuthors
 
+        mockBookFromDb = new Book();
+        mockBookFromDb.setTitle("Java core");
+
+        mockGenre = new Genre("Non Fiction");
+
+        reset(authorRepo, yearRepo, genreRepo, mapper);
     }
 
     @Test
-    void createBook() {
-        Set<Author> authors = new HashSet<>();
-        authors.add(new Author("Gorky"));
-        Set<Comment> comments = new HashSet<Comment>();
-        comments.add(new Comment("Gorky"));
-        Book book = new Book(0, "Gorky", new Genre("Gorky"),
-                new YearOfPublish("Gorky"), authors, comments);
+    void getBookWithException() {
+        var ex = assertThrows(NoBookException.class, () -> {
+            service.getBook(0);
+        });
 
-        when(scanner.getFromUser()).thenReturn("any()");
-        when(scanner.getFromUser()).thenReturn("ex");
-        when(scanner.getFromUser()).thenReturn("2020");
-        when(scanner.getFromUser()).thenReturn("Gorky");
-
-        service.createBook();
-
-        verify(bookDao, Mockito.times(1)).createBook(book);
+        assertEquals("Book is not exist", ex.getMessage());
     }
 
     @Test
-    void updateBook() {
-        Book book = new Book(1, "as", new Genre(), new YearOfPublish(), new HashSet<>(), new HashSet<>());
+    void createBook_WhenYearAndGenreExist_ShouldReturnSavedBookDto() {
+        // Given
+        YearOfPublish existingYear = new YearOfPublish("2025");
+        // Настройка заглушек для внутренних хелперов метода (getAuthorsSet, getYear, getGenre)
+        // Предполагается, что getAuthorsSet ищет авторов в базе. Задайте имя метода вашего репозитория авторов:
+        when(authorRepo.getByName("Lafore")).thenReturn(Optional.of(mockAuthor));
+        when(yearRepo.getYearByDate("2025")).thenReturn(Optional.of(existingYear));
+        when(genreRepo.getGenreByName("Non Fiction")).thenReturn(Optional.of(mockGenre));
 
-        when(scanner.getIdFromUser()).thenReturn(1);
-        when(scanner.getFromUser()).thenReturn("anyString(");
-        when(scanner.getFromUser()).thenReturn("asadada");
-        when(scanner.getIdFromUser()).thenReturn(1);
-        when(bookDao.getBookById(1)).thenReturn(new Book());
-        when(bookDao.updateBook(new Book())).thenReturn(new Book());
+        // Настройка для @MockBean bookRepo
+        when(bookRepo.createBook(any(Book.class))).thenReturn(mockBookFromDb);
+        when(mapper.toDto(any(Book.class))).thenReturn(expectedDto);
 
-        service.updateBook();
+        // When
+        BookDto result = bookService.createBook(inputDto);
 
-        verify(bookDao, Mockito.times(1))
-                .updateBook(any());
+        // Then
+        assertNotNull(result);
+        assertEquals("Java core", result.getTitle());
+        assertEquals("2025", result.getYear());
+
+        // Проверяем, что новые объекты года и жанра НЕ создавались
+        verify(yearRepo, never()).createYear(any(YearOfPublish.class));
+        verify(genreRepo, never()).createGenre(any(Genre.class));
     }
 
     @Test
-    void delBook() {
-        when(scanner.getIdFromUser()).thenReturn(1);
-        when(bookDao.getBookById(1)).thenReturn(new Book());
+    void createBook_WhenYearAndGenreDoNotExist_ShouldCreateThemAndReturnBookDto() {
+        // Given
+        YearOfPublish newYear = new YearOfPublish("2025");
+        Genre newGenre = new Genre("Non Fiction");
 
-        service.delBook();
+        // Настраиваем сценарий, когда в базе ничего нет (Optional.empty())
+        when(authorRepo.getByName("Lafore")).thenReturn(Optional.of(mockAuthor));
+        when(yearRepo.getYearByDate("2025")).thenReturn(Optional.empty());
+        when(genreRepo.getGenreByName("Non Fiction")).thenReturn(Optional.empty());
 
-        verify(bookDao, Mockito.times(1)).deleteBook(any());
-    }
+        // Настраиваем методы сохранения репозиториев, которые вызываются внутри orElseGet
+        when(yearRepo.createYear(any(YearOfPublish.class))).thenReturn(newYear);
+        when(genreRepo.createGenre(any(Genre.class))).thenReturn(newGenre);
 
-    @Test
-    void delBookWithZeroId() {
-        when(scanner.getIdFromUser()).thenReturn(0);
+        // Настройка для @MockBean bookRepo
+        when(bookRepo.createBook(any(Book.class))).thenReturn(mockBookFromDb);
+        when(mapper.toDto(any(Book.class))).thenReturn(expectedDto);
 
-        service.delBook();
+        // When
+        BookDto result = bookService.createBook(inputDto);
 
-        verify(bookDao, Mockito.times(0)).deleteBook(any());
+        // Then
+        assertNotNull(result);
+        assertEquals("Java core", result.getTitle());
+        assertEquals("2025", result.getYear());
+
+        // Проверяем, что из-за отсутствия записей сработали методы создания
+        verify(yearRepo, times(1)).createYear(any(YearOfPublish.class));
+        verify(genreRepo, times(1)).createGenre(any(Genre.class));
     }
 }

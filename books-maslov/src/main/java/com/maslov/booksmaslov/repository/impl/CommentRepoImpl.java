@@ -3,41 +3,42 @@ package com.maslov.booksmaslov.repository.impl;
 import com.maslov.booksmaslov.domain.Book;
 import com.maslov.booksmaslov.domain.Comment;
 import com.maslov.booksmaslov.exception.MaslovBookException;
-import com.maslov.booksmaslov.repository.CommentDao;
+import com.maslov.booksmaslov.repository.CommentRepo;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import java.util.Optional;
 
 import static java.util.Objects.isNull;
 
 @Slf4j
 @Component
-public class CommentDaoImpl implements CommentDao {
+public class CommentRepoImpl implements CommentRepo {
 
     @PersistenceContext
     private final EntityManager em;
 
-    public CommentDaoImpl(EntityManager em) {
+    public CommentRepoImpl(EntityManager em) {
         this.em = em;
     }
 
     @Override
-    public Comment getCommentById(long id) {
+    public Optional<Comment> getCommentById(long id) {
         if (isNull(em.find(Comment.class, id))) {
             throw new MaslovBookException("No comment for this ID");
         }
-        return em.find(Comment.class, id);
+        return Optional.ofNullable(em.find(Comment.class, id));
     }
 
     @Override
-    public Comment createComment(String comment) {
-        Comment comm = new Comment(comment);
+    public Comment createComment(Comment comm) {
         log.info("Created new Comment");
         em.persist(comm);
+        em.flush();
         return comm;
     }
 
@@ -48,7 +49,10 @@ public class CommentDaoImpl implements CommentDao {
 
     @Override
     public void deleteComment(Comment comment) {
-        em.remove(em.contains(comment) ? comment : em.merge(comment));
+        // Проверяем: если объект вдруг потерял связь с сессией (detached),
+        // мы сначала привязываем его обратно через merge(), а затем удаляем
+        Comment managedComment = em.contains(comment) ? comment : em.merge(comment);
+        em.remove(managedComment);
     }
 
     private Book checkResult(TypedQuery<Book> query, Long id) {

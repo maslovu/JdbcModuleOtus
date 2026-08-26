@@ -1,29 +1,28 @@
 package com.maslov.booksmaslov.repository.impl;
 
 import com.maslov.booksmaslov.domain.Genre;
-import com.maslov.booksmaslov.exception.MaslovBookException;
-import com.maslov.booksmaslov.repository.GenreDao;
+import com.maslov.booksmaslov.repository.GenreRepo;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
 
 import static com.maslov.booksmaslov.sql.SQLConstants.GET_ALL_GENRES;
 import static com.maslov.booksmaslov.sql.SQLConstants.GET_GENRE_BY_NAME;
+import static java.util.Optional.ofNullable;
 
 @Component
 @Slf4j
-public class GenreDaoImpl implements GenreDao {
+public class GenreRepoImpl implements GenreRepo {
 
     @PersistenceContext
     private final EntityManager em;
 
-    public GenreDaoImpl(EntityManager em) {
+    public GenreRepoImpl(EntityManager em) {
         this.em = em;
     }
 
@@ -35,14 +34,20 @@ public class GenreDaoImpl implements GenreDao {
 
     @Override
     public Optional<Genre> getGenreById(long id) {
-        return Optional.ofNullable(em.find(Genre.class, id));
+        return ofNullable(em.find(Genre.class, id));
     }
 
     @Override
-    public List<Genre> getGenreByName(String name) {
+    public Optional<Genre> getGenreByName(String name) {
+        Genre genre = null;
         var query = em.createQuery(GET_GENRE_BY_NAME, Genre.class);
         query.setParameter("name", name);
-        return checkResult(query, name);
+        try {
+            genre = query.getSingleResult();
+        } catch (NoResultException ex) {
+            log.error("genre not in db, new genre will be created in db");
+        }
+        return ofNullable(genre);
     }
 
     @Override
@@ -53,14 +58,5 @@ public class GenreDaoImpl implements GenreDao {
             return genre;
         }
         return em.merge(genre);
-    }
-
-    private List<Genre> checkResult(TypedQuery<Genre> query, String name) {
-        try {
-            return query.getResultList();
-        } catch (NoResultException e) {
-            log.warn("Has not author with name: {}", name);
-            throw new MaslovBookException(String.format("Has not genre with name %s", name));
-        }
     }
 }

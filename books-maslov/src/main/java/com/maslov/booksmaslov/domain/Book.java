@@ -1,42 +1,59 @@
 package com.maslov.booksmaslov.domain;
 
-import lombok.AllArgsConstructor;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedEntityGraphs;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 import java.util.HashSet;
 import java.util.Set;
 
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @Table(name = "books")
 @Entity
-@NamedEntityGraph(name = "author-entity-graph", attributeNodes = {@NamedAttributeNode("authors")})
+@NamedEntityGraphs({
+        // Граф только для метаданных (БЕЗ комментариев).
+        @NamedEntityGraph(
+                name = "book-meta-graph",
+                attributeNodes = {
+                        @NamedAttributeNode("genre"),
+                        @NamedAttributeNode("year"),
+                        @NamedAttributeNode("authors")
+                }
+        ),
+        // Полный граф (если он используется в других сервисах)
+        @NamedEntityGraph(
+                name = "book-full-graph",
+                attributeNodes = {
+                        @NamedAttributeNode("genre"),
+                        @NamedAttributeNode("year"),
+                        @NamedAttributeNode("authors"),
+                        @NamedAttributeNode("comments")
+                }
+        )
+})
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long bookId;
+    private long id;
 
-    @Column(name = "name", nullable = false, unique = true)
-    private String name;
+    @Column(name = "name", unique = true, nullable = false)
+    private String title;
 
     @ManyToOne(targetEntity = Genre.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "genre_id")
@@ -53,17 +70,13 @@ public class Book {
 
     @Getter
     @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+//    @JsonManagedReference // Этот список БУДЕТ включен в JSON книги
     //указываем, если коммент не должен знать о книге @JoinColumn(name = "book_id")
     private Set<Comment> comments = new HashSet<>();
 
-    public void addChild(Comment child) {
+    public void addComment(Comment child) {
         this.comments.add(child);
         child.setBook(this); // Важно синхронизировать обратную связь
-    }
-
-    public void addComment(Comment comment) {
-        this.comments.add(comment);
-        comment.setBook(this);
     }
 
     public void removeComment(Comment comment) {
@@ -84,10 +97,10 @@ public class Book {
     @Override
     public String toString() {
         return "Book{" +
-                "bookId=" + bookId +
-                ", name='" + name + '\'' +
-                ", genre=" + genre.getName() +
-                ", year=" + year.getDateOfPublish() +
+                "bookId=" + id +
+                ", name='" + title + '\'' +
+                ", genre=" + (genre != null ? genre.getName() : "null") +
+                ", year=" + (year != null ? year.getYear() : "null") +
                 ", authors=" + authors +
                 ", comments=" + comments +
                 '}';
