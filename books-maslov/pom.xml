@@ -5,7 +5,7 @@
     <parent>
         <artifactId>baseOtus</artifactId>
         <groupId>com.maslov</groupId>
-        <version>1.2.1-SNAPSHOT</version>
+        <version>2.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>books-maslov</artifactId>
@@ -72,6 +72,15 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.0</version> <!-- Актуальная стабильная версия -->
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version> <!-- Современная версия для Java 21 -->
+                <configuration>
+                    <!-- Явно дублируем версию здесь для надежности -->
+                    <release>21</release>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.liquibase</groupId>

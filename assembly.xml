@@ -1,0 +1,20 @@
+<assembly xmlns="http://apache.org"
+          xmlns:xsi="http://w3.org"
+          xsi:schemaLocation="http://apache.org http://apache.org">
+    <id>schema-zip</id>
+    <formats>
+        <format>zip</format> <!-- Формат архива -->
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <!-- Откуда берем файлы миграций Liquibase -->
+            <directory>src/main/resources/schema</directory>
+            <!-- Куда складываем их внутри итогового ZIP-архива -->
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>**/*</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</assembly>
