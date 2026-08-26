@@ -26,7 +26,7 @@ public class BookRepoImpl implements BookRepo {
     private final EntityManager em;
 
     @Override
-    public List<Book> getAllBook() {
+    public List<Book> getAllBooks() {
         EntityGraph<?> entityGraph = em.getEntityGraph("author-entity-graph");
         var allBook = em.createQuery(GET_ALL_BOOKS, Book.class);
 
