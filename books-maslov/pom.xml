@@ -96,7 +96,7 @@
                         <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
-                            <version>1.5.5.Final</version>
+                            <version>${mapstruct.version}</version>
                         </path>
                     </annotationProcessorPaths>
 
@@ -115,7 +115,6 @@
                 <configuration>
                     <propertyFile>liquibase.properties</propertyFile>
                     <changeLogDirectory>src/main/resources/schema</changeLogDirectory>
-                    <driver>org.postgresql.Driver</driver>
                 </configuration>
             </plugin>
         </plugins>

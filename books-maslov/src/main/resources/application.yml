@@ -1,22 +1,19 @@
 spring:
-  main:
-    allow-circular-references: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/otus
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
 
-  shell:
-    interactive:
-      enabled: true
-  sql:
-    init:
-      mode: always
+  liquibase:
+    change-log: classpath:schema/db-master-changelog.xml
+    enabled: true
+
 
   jpa:
-    generate-ddl: true
-    hibernate:
-      ddl-auto: none
-
-    show-sql: false
-
     properties:
       hibernate:
-        format_sql: true
         enable_lazy_load_no_trans: true
+        jdbc.batch_size: 30
+        order_inserts: true
+        order_updates: true
