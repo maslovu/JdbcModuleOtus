@@ -5,6 +5,8 @@ import com.maslov.booksmaslov.domain.Book;
 import com.maslov.booksmaslov.dto.BookDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
 import java.util.Arrays;
@@ -12,7 +14,10 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Mapper(unmappedTargetPolicy = ReportingPolicy.ERROR, componentModel = "spring")
+@Mapper(componentModel = "spring",
+        uses = {GenreMapper.class, YearMapper.class},
+        unmappedTargetPolicy = ReportingPolicy.ERROR,
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface BookMapper {
 
     @Mapping(source = "genre.id", target = "genreId")
@@ -46,4 +51,10 @@ public interface BookMapper {
                 .map(Author::new) // Предполагаем, что у Author есть конструктор (id, name)
                 .collect(Collectors.toSet());
     }
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "comments", ignore = true)
+    @Mapping(target = "genre.id", source = "genreId")
+    @Mapping(target = "year.id", source = "yearId")
+    void updateEntityFromDto(BookDto source, @MappingTarget Book target);
 }

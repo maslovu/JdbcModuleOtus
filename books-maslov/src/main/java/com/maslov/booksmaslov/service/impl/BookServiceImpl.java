@@ -49,13 +49,12 @@ public class BookServiceImpl implements BookService {
     @Transactional
     @Override
     public BookDto updateBook(long id, BookDto bookDto) {
-//        return bookRepo.findById(id)
-//                .orElseThrow(() -> new NoBookException("Book with id " + id + " does not exist"));
-        return null;
-//        Book book = mapper.toEntity(bookDto);
-//        Book updatedBook = bookRepo.updateBook(book);
-//
-//        return mapper.toDto(updatedBook);
+        Book existingBook = bookRepo.findById(id)
+                .orElseThrow(() -> new NoBookException("Book with id " + id + " does not exist"));
+
+        mapper.updateEntityFromDto(bookDto, existingBook);
+
+        return mapper.toDto(existingBook);
     }
 
     @Transactional
