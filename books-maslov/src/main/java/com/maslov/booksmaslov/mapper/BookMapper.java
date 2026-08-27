@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring",
-        uses = {GenreMapper.class, YearMapper.class},
+        uses = EntityLoaderContext.class,
         unmappedTargetPolicy = ReportingPolicy.ERROR,
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface BookMapper {
@@ -35,11 +35,9 @@ public interface BookMapper {
     }
 
     @Mapping(target = "comments", ignore = true)
-    @Mapping(target = "id", ignore = true)
-    @Mapping(source = "genreId", target = "genre.id")
-    @Mapping(target = "genre.name", ignore = true)
-    @Mapping(source = "yearId", target = "year.id")
-    @Mapping(target = "year.year", ignore = true)
+    @Mapping(target = "authors", ignore = true)
+    @Mapping(source = "genreId", target = "genre")
+    @Mapping(source = "yearId", target = "year")
     Book toEntity(BookDto bookDto);
 
     default Set<Author> stringToAuthors(String source) {
@@ -53,8 +51,9 @@ public interface BookMapper {
     }
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "genre", source = "genreId")
+    @Mapping(target = "year", source = "yearId")
+    @Mapping(target = "authors", ignore = true)
     @Mapping(target = "comments", ignore = true)
-    @Mapping(target = "genre.id", source = "genreId")
-    @Mapping(target = "year.id", source = "yearId")
     void updateEntityFromDto(BookDto source, @MappingTarget Book target);
 }
