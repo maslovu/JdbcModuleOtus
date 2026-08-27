@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = ExistingIdValidator.class)
 public @interface ExistingId {
 
-    Class<?> entityClass();
+    Class<?> entityClass(); // Сущность, которую нужно проверить
 
     String message() default "Объект с таким ID не найден";
 

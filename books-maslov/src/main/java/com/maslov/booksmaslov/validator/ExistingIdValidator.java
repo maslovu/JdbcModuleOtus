@@ -22,6 +22,7 @@ public class ExistingIdValidator implements ConstraintValidator<ExistingId, Long
         this.targetEntity = annotation.entityClass();
     }
 
+    // Вызывается каждый раз при проверке данных
     @Override
     public boolean isValid(Long value, ConstraintValidatorContext context) {
         if (value == null) {
