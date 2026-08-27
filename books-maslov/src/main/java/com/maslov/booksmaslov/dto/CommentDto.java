@@ -1,9 +1,9 @@
-package com.maslov.booksmaslov.model;
+package com.maslov.booksmaslov.dto;
 
 public class CommentDto {
-    private Long id;
+    private long id;
     private String text;
-    private Long bookId; // Вместо объекта Book — только его идентификатор
+    private long bookId; // Вместо объекта Book — только его идентификатор
 
     // Конструкторы
     public CommentDto() {}
