@@ -41,9 +41,12 @@ public class BookServiceImpl implements BookService {
     public BookDto createBook(BookDto bookDto) {
         Book bookEntity = mapper.toEntity(bookDto);
 
-        Book savesBook = bookRepo.save(bookEntity);
+        Book savedEntity = bookRepo.save(bookEntity);
 
-        return mapper.toDto(savesBook);
+        Book freshCopy = bookRepo.findById(savedEntity.getId())
+                .orElseThrow(() -> new IllegalStateException("Книга исчезла сразу после сохранения"));
+
+        return mapper.toDto(freshCopy);
     }
 
     @Transactional
@@ -54,17 +57,13 @@ public class BookServiceImpl implements BookService {
 
         mapper.updateEntityFromDto(bookDto, existingBook);
 
-        log.info("updateBook for id {}", id);
         return mapper.toDto(existingBook);
     }
 
     @Transactional
     @Override
     public void delBook(long id) {
-//        Book book = bookRepo.getBookById(id)
-//                .orElseThrow(() -> new NoBookException("Book with id " + id + " does not exist"));
-//
-//        bookRepo.deleteBook(book);
-//        log.info("Book deleted successfully");
+        //Отсутствие книги не является ошибкой (метод должен быть идемпотентным)
+        bookRepo.deleteById(id);
     }
 }

@@ -52,7 +52,6 @@ public interface BookMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "genre", source = "genreId")
     @Mapping(target = "year", source = "yearId")
-    @Mapping(target = "authors", ignore = true)
     @Mapping(target = "comments", ignore = true)
     void updateEntityFromDto(BookDto source, @MappingTarget Book target);
 }

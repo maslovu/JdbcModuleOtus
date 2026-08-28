@@ -11,12 +11,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedAttributeNode;
-import jakarta.persistence.NamedEntityGraph;
-import jakarta.persistence.NamedEntityGraphs;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.HashSet;
@@ -26,27 +26,9 @@ import java.util.Set;
 @Setter
 @Table(name = "books")
 @Entity
-@NamedEntityGraphs({
-        // Граф только для метаданных (БЕЗ комментариев).
-        @NamedEntityGraph(
-                name = "book-meta-graph",
-                attributeNodes = {
-                        @NamedAttributeNode("genre"),
-                        @NamedAttributeNode("year"),
-                        @NamedAttributeNode("authors")
-                }
-        ),
-        // Полный граф (если он используется в других сервисах)
-        @NamedEntityGraph(
-                name = "book-full-graph",
-                attributeNodes = {
-                        @NamedAttributeNode("genre"),
-                        @NamedAttributeNode("year"),
-                        @NamedAttributeNode("authors"),
-                        @NamedAttributeNode("comments")
-                }
-        )
-})
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -70,7 +52,7 @@ public class Book {
 
     @Getter
     @OneToMany(mappedBy = "book", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-//    @JsonManagedReference // Этот список БУДЕТ включен в JSON книги
+    //@JsonManagedReference // Этот список БУДЕТ включен в JSON книги
     //указываем, если коммент не должен знать о книге @JoinColumn(name = "book_id")
     private Set<Comment> comments = new HashSet<>();
 

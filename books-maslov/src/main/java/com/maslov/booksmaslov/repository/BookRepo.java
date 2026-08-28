@@ -2,10 +2,12 @@ package com.maslov.booksmaslov.repository;
 
 import com.maslov.booksmaslov.domain.Book;
 import com.maslov.booksmaslov.dto.BookDto;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface BookRepo extends JpaRepository<Book, Long> {
 
@@ -21,4 +23,7 @@ public interface BookRepo extends JpaRepository<Book, Long> {
             "LEFT JOIN b.year y ")
     List<BookDto> findAllBooks();
 
+    //Ищет книгу и гарантированно подтягивает авторов/жанр одним запросом
+    @EntityGraph(attributePaths = {"genre", "year", "authors"})
+    Optional<Book> findById(Long id);
 }
