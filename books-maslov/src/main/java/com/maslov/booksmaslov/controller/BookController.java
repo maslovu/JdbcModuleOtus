@@ -1,8 +1,8 @@
 package com.maslov.booksmaslov.controller;
 
-import com.maslov.booksmaslov.model.BookDto;
-import com.maslov.booksmaslov.model.CommentDto;
-import com.maslov.booksmaslov.model.CommentRequest;
+import com.maslov.booksmaslov.dto.BookDto;
+import com.maslov.booksmaslov.dto.CommentDto;
+import com.maslov.booksmaslov.dto.CommentRequest;
 import com.maslov.booksmaslov.service.BookService;
 import com.maslov.booksmaslov.service.CommentService;
 import jakarta.validation.Valid;
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/books")
@@ -39,9 +38,15 @@ public class BookController {
     }
 
     @GetMapping("/{bookId}")
-    public ResponseEntity<BookDto> getBookById(@PathVariable long id) {
-        BookDto book = bookService.getBook(id);
+    public ResponseEntity<BookDto> getBookById(@PathVariable long bookId) {
+        BookDto book = bookService.getBook(bookId);
         return ResponseEntity.ok(book);
+    }
+
+    @GetMapping("/{bookId}/comments")
+    public ResponseEntity<List<CommentDto>> getCommentsForBook(@PathVariable long bookId) {
+        List<CommentDto> comments = commentService.getAllCommentForBook(bookId);
+        return ResponseEntity.ok(comments);
     }
 
     @PostMapping
@@ -49,37 +54,31 @@ public class BookController {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookService.createBook(book));
     }
 
-    @PutMapping("/{bookId}")
-    public ResponseEntity<BookDto> updateBook(@PathVariable long id,
-                                              @Valid @RequestBody BookDto bookDto) {
-        BookDto updatedBook = bookService.updateBook(id, bookDto);
-
-        return ResponseEntity.ok(updatedBook);
-    }
-
-    @DeleteMapping("/{bookId}")
-    public void deleteBook(@PathVariable long id) {
-        bookService.delBook(id);
-    }
-
-    @GetMapping("/{bookId}/comments")
-    public ResponseEntity<Set<CommentDto>> getCommentsForBook(@PathVariable long bookId) {
-        Set<CommentDto> comments = commentService.getAllCommentForBook(bookId);
-        return ResponseEntity.ok(comments);
-    }
-
-    @PostMapping("/{bookId}/comments")
+    @PostMapping("/{bookId}/comment")
     public ResponseEntity<CommentDto> createComment(@PathVariable long bookId,
                                                     @Valid @RequestBody CommentRequest comment) {
         CommentDto createdComment = commentService.createComment(comment, bookId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
     }
 
-    @PutMapping("/comments/{commentId}")
+    @PutMapping("/{bookId}")
+    public ResponseEntity<BookDto> updateBook(@PathVariable long bookId,
+                                              @Valid @RequestBody BookDto bookDto) {
+        BookDto updatedBook = bookService.updateBook(bookId, bookDto);
+
+        return ResponseEntity.ok(updatedBook);
+    }
+
+    @PutMapping("/comment/{commentId}")
     public ResponseEntity<CommentDto> updateComment(@PathVariable long commentId,
                                                     @Valid @RequestBody CommentRequest comment) {
         CommentDto updatedComment = commentService.updateComment(comment, commentId);
         return ResponseEntity.ok(updatedComment);
+    }
+
+    @DeleteMapping("/{bookId}")
+    public void deleteBook(@PathVariable long bookId) {
+        bookService.delBook(bookId);
     }
 
     @DeleteMapping("/comments/{commentId}")

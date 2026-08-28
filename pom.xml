@@ -3,17 +3,16 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.2</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <version>3.2.6</version>
+        <relativePath/>
     </parent>
 
     <groupId>com.maslov</groupId>
     <artifactId>baseOtus</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -21,49 +20,38 @@
     </modules>
 
     <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
         <java.version>21</java.version>
-        <maven.compiler.release>21</maven.compiler.release>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.release>21</maven.compiler.release> <!-- Актуальные версии драйверов -->
+
+        <postgresql.version>42.7.3</postgresql.version>
+        <liquibase.version>4.27.0</liquibase.version> <!-- Кодировка -->
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <!-- ОБНОВЛЕНО: Старые версии SLF4J и Logback не поддерживают особенности Java 21 -->
         <slf4j.version>2.0.12</slf4j.version>
         <logback.version>1.5.6</logback.version>
 
-        <!-- ОБНОВЛЕНО: Liquibase 4.8.0 физически «не знает» про Java 21 и падает при старте -->
-        <liquibase.version>4.27.0</liquibase.version>
-
-        <!-- ОБНОВЛЕНО: Драйвер для стабильной работы с современными версиями БД -->
-        <postgresql.version>42.7.3</postgresql.version>
-
-        <!-- ОБНОВЛЕНО: В версии 1.26 были критические уязвимости безопасности (CVE) -->
-        <snakeyaml.version>2.2</snakeyaml.version>
-
-        <!-- ОБНОВЛЕНО: Hibernate 6.1 не поддерживает Java 21. Нужна версия минимум 6.4+ -->
-        <hibernate.version>6.4.4.Final</hibernate.version>
+        <!-- Управление версиями кодогенераторов -->
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -75,24 +63,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.junit</groupId>
-            <artifactId>junit-bom</artifactId>
-            <version>5.11.4</version> <!-- Стабильная версия, отлично работающая со Spring Boot -->
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
-        </dependency>
-        <!--Logging-->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
+        </dependency> <!-- Logging dependencies (если нужны специфичные настройки поверх Logback) -->
     </dependencies>
 
     <build>
@@ -101,15 +77,8 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
 </project>

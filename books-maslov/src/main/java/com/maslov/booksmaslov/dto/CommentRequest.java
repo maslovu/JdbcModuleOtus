@@ -1,4 +1,4 @@
-package com.maslov.booksmaslov.model;
+package com.maslov.booksmaslov.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

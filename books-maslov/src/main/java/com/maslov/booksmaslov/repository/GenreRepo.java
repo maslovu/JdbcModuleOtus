@@ -1,17 +1,7 @@
 package com.maslov.booksmaslov.repository;
 
 import com.maslov.booksmaslov.domain.Genre;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
-import java.util.Optional;
-
-public interface GenreRepo {
-    List<Genre> getAllGenres();
-
-    Optional<Genre> getGenreByName(String name);
-
-    Optional<Genre> getGenreById(long id);
-
-    Genre createGenre(Genre genre);
-
+public interface GenreRepo extends JpaRepository<Genre, Long> {
 }
