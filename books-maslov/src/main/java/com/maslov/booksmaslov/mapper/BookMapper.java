@@ -35,7 +35,6 @@ public interface BookMapper {
     }
 
     @Mapping(target = "comments", ignore = true)
-    @Mapping(target = "authors", ignore = true)
     @Mapping(source = "genreId", target = "genre")
     @Mapping(source = "yearId", target = "year")
     Book toEntity(BookDto bookDto);

@@ -54,6 +54,7 @@ public class BookServiceImpl implements BookService {
 
         mapper.updateEntityFromDto(bookDto, existingBook);
 
+        log.info("updateBook for id {}", id);
         return mapper.toDto(existingBook);
     }
 
