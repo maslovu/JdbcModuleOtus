@@ -36,7 +36,7 @@ import static org.mockito.Mockito.verify;
 //Я не использовал @SpringBootTest (Unit Test),
 // потому что для юнит-тестирования конкретного класса это считается «антипаттерном» и избыточностью
 @ExtendWith(MockitoExtension.class)
-class BookServiceUnitTest {
+class BookServiceImplTest {
 
     @Mock
     private BookRepo bookRepo;
@@ -51,16 +51,11 @@ class BookServiceUnitTest {
     private final long TEST_ID = 42L;
     private BookDto bookDto;
     private Book bookEntity;
-    private BookDto dto1;
-    private BookDto dto2;
     // Входящие данные от клиента
     private Book savedEntity;
     private Book freshCopyFromDb;
     // Ожидаемый результат
     private BookDto expectedDto;
-
-    // Ожидаемый результат
-    private List<BookDto> expectedList;
 
     @BeforeEach
     void setUp() {
@@ -127,9 +122,10 @@ class BookServiceUnitTest {
     @Test
     void getAllBook_WhenBooksExist_ReturnsListOfDtos() {
         // Arrange: Специфичная настройка только для этого сценария
-        dto1 = new BookDto(1L, "Title 1", "Author 1", 2000L, 1L);
-        dto2 = new BookDto(2L, "Title 2", "Author 2", 2010L, 2L);
-        expectedList = List.of(dto1, dto2);
+        BookDto dto1 = new BookDto(1L, "Title 1", "Author 1", 2000L, 1L);
+        BookDto dto2 = new BookDto(2L, "Title 2", "Author 2", 2010L, 2L);
+        // Ожидаемый результат
+        List<BookDto> expectedList = List.of(dto1, dto2);
         given(bookRepo.findAllBooks()).willReturn(expectedList);
 
         // Act

@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/books")
@@ -45,8 +44,8 @@ public class BookController {
     }
 
     @GetMapping("/{bookId}/comments")
-    public ResponseEntity<Set<CommentDto>> getCommentsForBook(@PathVariable long bookId) {
-        Set<CommentDto> comments = commentService.getAllCommentForBook(bookId);
+    public ResponseEntity<List<CommentDto>> getCommentsForBook(@PathVariable long bookId) {
+        List<CommentDto> comments = commentService.getAllCommentForBook(bookId);
         return ResponseEntity.ok(comments);
     }
 
@@ -55,7 +54,7 @@ public class BookController {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookService.createBook(book));
     }
 
-    @PostMapping("/{bookId}/comments")
+    @PostMapping("/{bookId}/comment")
     public ResponseEntity<CommentDto> createComment(@PathVariable long bookId,
                                                     @Valid @RequestBody CommentRequest comment) {
         CommentDto createdComment = commentService.createComment(comment, bookId);
@@ -70,7 +69,7 @@ public class BookController {
         return ResponseEntity.ok(updatedBook);
     }
 
-    @PutMapping("/comments/{commentId}")
+    @PutMapping("/comment/{commentId}")
     public ResponseEntity<CommentDto> updateComment(@PathVariable long commentId,
                                                     @Valid @RequestBody CommentRequest comment) {
         CommentDto updatedComment = commentService.updateComment(comment, commentId);
