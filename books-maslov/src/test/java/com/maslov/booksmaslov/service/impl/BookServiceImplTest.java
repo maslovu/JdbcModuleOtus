@@ -1,309 +1,337 @@
-//package com.maslov.booksmaslov.service.impl;
-//
-//import com.maslov.booksmaslov.domain.Book;
-//import com.maslov.booksmaslov.exception.NoBookException;
-//import com.maslov.booksmaslov.mapper.BookMapper;
-//import com.maslov.booksmaslov.model.BookDto;
-//import com.maslov.booksmaslov.repository.BookRepo;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.context.SpringBootTest;
-//import org.springframework.boot.test.mock.mockito.MockBean;
-//import org.springframework.dao.DataIntegrityViolationException;
-//
-//import java.util.Collections;
-//import java.util.List;
-//import java.util.Optional;
-//
-//import static org.junit.jupiter.api.Assertions.assertEquals;
-//import static org.junit.jupiter.api.Assertions.assertNotNull;
-//import static org.junit.jupiter.api.Assertions.assertThrows;
-//import static org.junit.jupiter.api.Assertions.assertTrue;
-//import static org.mockito.ArgumentMatchers.any;
-//import static org.mockito.Mockito.never;
-//import static org.mockito.Mockito.reset;
-//import static org.mockito.Mockito.times;
-//import static org.mockito.Mockito.verify;
-//import static org.mockito.Mockito.verifyNoInteractions;
-//import static org.mockito.Mockito.when;
-//
-//@SpringBootTest(classes = BookServiceImpl.class)
-//class BookServiceImplTest {
-//    @Autowired
-//    private BookServiceImpl bookService;
-//
-//    @MockBean
-//    private BookRepo bookRepo;
-//
-//    @MockBean
-//    private BookMapper mapper;
-//
-//    private BookDto inputDto;
-//    private Book mockBook;
-//    private BookDto expectedDto;
-//
-//    @BeforeEach
-//    void setUp() {
-//        inputDto = new BookDto();
-//        inputDto.setTitle("Java core");
-//        inputDto.setAuthors("Lafore");
-//        inputDto.setYear("2025");
-//        inputDto.setGenre("Non Fiction");
-//
-//        mockBook = new Book();
-//        mockBook.setId(42L);
-//        mockBook.setTitle("Java core");
-//
-//        expectedDto = new BookDto();
-//        expectedDto.setId(42L);
-//        expectedDto.setTitle("Java core");
-//        expectedDto.setAuthors("Lafore");
-//        expectedDto.setYear("2025");
-//        expectedDto.setGenre("Non Fiction");
-//
-//        reset(bookRepo, mapper); // Очищаем заглушки перед каждым тестом
-//    }
-//
-//    @Test
-//    void getBook_WhenBookExists_ShouldReturnBookDto() {
-//        // Given
-//        long bookId = 1L;
-//
-//        // Настраиваем поведение моков: репозиторий возвращает заполненный Optional
-//        when(bookRepo.getBookById(bookId)).thenReturn(Optional.of(mockBook));
-//        when(mapper.toDto(mockBook)).thenReturn(expectedDto);
-//
-//        // When
-//        BookDto result = bookService.getBook(bookId);
-//
-//        // Then
-//        assertNotNull(result);
-//        assertEquals("Java core", result.getTitle());
-//        assertEquals("2025", result.getYear());
-//
-//        // Проверяем, что методы зависимостей вызывались ровно по одному разу
-//        verify(bookRepo, times(1)).getBookById(bookId);
-//        verify(mapper, times(1)).toDto(mockBook);
-//    }
-//
-//    @Test
-//    void getBook_WhenBookDoesNotExist_ShouldThrowNoBookException() {
-//        // Given
-//        long nonExistentId = 999L;
-//
-//        // Настраиваем поведение моков: репозиторий возвращает пустой Optional
-//        when(bookRepo.getBookById(nonExistentId)).thenReturn(Optional.empty());
-//
-//        // When & Then
-//        // Используем assertThrows для перехвата и проверки вашего кастомного исключения
-//        NoBookException exception = assertThrows(NoBookException.class, () -> {
-//            bookService.getBook(nonExistentId);
-//        });
-//
-//        // Проверяем текст сообщения внутри исключения
-//        assertEquals("Book is not exist", exception.getMessage());
-//
-//        // Верифицируем: к мапперу дело даже не дошло, репозиторий вызвался
-//        verify(bookRepo, times(1)).getBookById(nonExistentId);
-//        verifyNoInteractions(mapper); // Маппер не должен вызываться для пустой книги
-//    }
-//
-//    @Test
-//    void getAllBook_WhenBooksExist_ShouldReturnListOfBookDtos() {
-//        // Given
-//        Book book1 = new Book();
-//        book1.setId(1L);
-//        book1.setTitle("Java core");
-//
-//        Book book2 = new Book();
-//        book2.setId(2L);
-//        book2.setTitle("Effective Java");
-//
-//        BookDto dto1 = new BookDto();
-//        dto1.setId(1L);
-//        dto1.setTitle("Java core");
-//
-//        BookDto dto2 = new BookDto();
-//        dto2.setId(2L);
-//        dto2.setTitle("Effective Java");
-//
-//        // Настраиваем моки: репозиторий возвращает список из 2 книг
-//        when(bookRepo.getAllBooks()).thenReturn(List.of(book1, book2));
-//        when(mapper.toDto(book1)).thenReturn(dto1);
-//        when(mapper.toDto(book2)).thenReturn(dto2);
-//
-//        // When
-//        List<BookDto> result = bookService.getAllBook();
-//
-//        // Then
-//        assertNotNull(result);
-//        assertEquals(2, result.size(), "Должно вернуться ровно 2 книги");
-//        assertEquals("Java core", result.get(0).getTitle());
-//        assertEquals("Effective Java", result.get(1).getTitle());
-//
-//        // Проверяем взаимодействие с зависимостями
-//        verify(bookRepo, times(1)).getAllBooks();
-//        verify(mapper, times(1)).toDto(book1);
-//        verify(mapper, times(1)).toDto(book2);
-//    }
-//
-//    @Test
-//    void getAllBook_WhenNoBooksInDb_ShouldReturnEmptyList() {
-//        // Given
-//        // Настраиваем репозиторий на возврат пустого списка
-//        when(bookRepo.getAllBooks()).thenReturn(Collections.emptyList());
-//
-//        // When
-//        List<BookDto> result = bookService.getAllBook();
-//
-//        // Then
-//        assertNotNull(result);
-//        assertTrue(result.isEmpty(), "Список должен быть пуст, если в БД нет книг");
-//
-//        // Верифицируем: репозиторий вызвался, а маппер ни разу не дергался (так как цикл не запустился)
-//        verify(bookRepo, times(1)).getAllBooks();
-//        verifyNoInteractions(mapper);
-//    }
-//
-//    @Test
-//    void createBook_ShouldMapSaveAndReturnDto() {
-//        // Given
-//        Book savedBookFromDb = new Book();
-//        savedBookFromDb.setId(42L);
-//        savedBookFromDb.setTitle("Java core");
-//
-//        // Настраиваем цепочку вызовов: DTO -> Entity -> Save -> SavedEntity -> ReturnDTO
-//        when(mapper.toEntity(inputDto)).thenReturn(mockBook);
-//        when(bookRepo.createBook(mockBook)).thenReturn(savedBookFromDb);
-//        when(mapper.toDto(savedBookFromDb)).thenReturn(expectedDto);
-//
-//        // When
-//        BookDto result = bookService.createBook(inputDto);
-//
-//        // Then
-//        assertNotNull(result);
-//        assertEquals(42L, result.getId());
-//        assertEquals("Java core", result.getTitle());
-//
-//        // Верифицируем строгую последовательность шагов бизнес-логики
-//        verify(mapper, times(1)).toEntity(inputDto);
-//        verify(bookRepo, times(1)).createBook(mockBook);
-//        verify(mapper, times(1)).toDto(savedBookFromDb);
-//    }
-//
-//    @Test
-//    void createBook_WhenRepositoryThrowsException_ShouldPropagateException() {
-//        // Given
-//        when(mapper.toEntity(inputDto)).thenReturn(mockBook);
-//
-//        // Симулируем ошибку базы данных (например, нарушение констреинта UNIQUE)
-//        when(bookRepo.createBook(mockBook)).thenThrow(new DataIntegrityViolationException("Database error"));
-//
-//        // When & Then
-//        // Убеждаемся, что сервис пробрасывает ошибку наверх для отката транзакции
-//        assertThrows(DataIntegrityViolationException.class, () -> {
-//            bookService.createBook(inputDto);
-//        });
-//
-//        // Верифицируем: до финального маппинга в DTO код даже не дошел
-//        verify(mapper, times(1)).toEntity(inputDto);
-//        verify(bookRepo, times(1)).createBook(mockBook);
-//        verify(mapper, never()).toDto(any());
-//    }
-//
-//    @Test
-//    void updateBook_WhenBookExists_ShouldMapUpdateAndReturnDto() {
-//        // Given
-//        long bookId = 1L;
-//        inputDto = new BookDto();
-//        inputDto.setTitle("Java core (Updated)");
-//        inputDto.setAuthors("Lafore");
-//        expectedDto = new BookDto();
-//        expectedDto.setId(1L);
-//        expectedDto.setTitle("Java core (Updated)");
-//        Book existingBook = new Book();
-//        existingBook.setId(1L);
-//        existingBook.setTitle("Java core");
-//        Book updatedBookFromDb = new Book();
-//        updatedBookFromDb.setId(1L);
-//        updatedBookFromDb.setTitle("Java core (Updated)");
-//
-//        // Настраиваем цепочку: нашли книгу -> смаппили изменения сверху -> сохранили -> вернули DTO
-//        when(bookRepo.getBookById(bookId)).thenReturn(Optional.of(existingBook));
-//        when(mapper.toEntity(inputDto, existingBook)).thenReturn(updatedBookFromDb);
-//        when(bookRepo.updateBook(updatedBookFromDb)).thenReturn(updatedBookFromDb);
-//        when(mapper.toDto(updatedBookFromDb)).thenReturn(expectedDto);
-//
-//        // When
-//        BookDto result = bookService.updateBook(bookId, inputDto);
-//
-//        // Then
-//        assertNotNull(result);
-//        assertEquals("Java core (Updated)", result.getTitle());
-//
-//        // Проверяем вызовы всех зависимостей по цепочке
-//        verify(bookRepo, times(1)).getBookById(bookId);
-//        verify(mapper, times(1)).toEntity(inputDto, existingBook);
-//        verify(bookRepo, times(1)).updateBook(updatedBookFromDb);
-//        verify(mapper, times(1)).toDto(updatedBookFromDb);
-//    }
-//
-//    @Test
-//    void updateBook_WhenBookDoesNotExist_ShouldThrowException() {
-//        // Given
-//        long nonExistentId = 999L;
-//        when(bookRepo.getBookById(nonExistentId)).thenReturn(Optional.empty());
-//
-//        // When & Then
-//        // Проверяем, что если книги нет, выполнение прерывается
-//        assertThrows(NoBookException.class, () -> {
-//            bookService.updateBook(nonExistentId, inputDto);
-//        });
-//
-//        // Верифицируем: репозиторий поиска вызвался, а маппинг и сохранение проигнорированы
-//        verify(bookRepo, times(1)).getBookById(nonExistentId);
-//        verify(mapper, never()).toEntity(any(), any());
-//        verify(bookRepo, never()).updateBook(any());
-//        verify(mapper, never()).toDto(any());
-//    }
-//
-//    @Test
-//    void delBook_WhenBookExists_ShouldDeleteSuccessfully() {
-//        // Given
-//        long bookId = 1L;
-//
-//        // Настраиваем мок: книга успешно найдена в базе данных
-//        when(bookRepo.getBookById(bookId)).thenReturn(Optional.of(mockBook));
-//
-//        // When
-//        bookService.delBook(bookId);
-//
-//        // Then
-//        // Верифицируем, что метод поиска и метод удаления вызваны строго по 1 разу
-//        verify(bookRepo, times(1)).getBookById(bookId);
-//        verify(bookRepo, times(1)).deleteBook(mockBook);
-//    }
-//
-//    @Test
-//    void delBook_WhenBookDoesNotExist_ShouldThrowNoBookException() {
-//        // Given
-//        long nonExistentId = 999L;
-//
-//        // Настраиваем мок: репозиторий возвращает пустой Optional
-//        when(bookRepo.getBookById(nonExistentId)).thenReturn(Optional.empty());
-//
-//        // When & Then
-//        // Проверяем, что метод выбрасывает именно NoBookException
-//        NoBookException exception = assertThrows(NoBookException.class, () -> {
-//            bookService.delBook(nonExistentId);
-//        });
-//
-//        // Проверяем корректность сообщения внутри исключения
-//        assertEquals("Book with id " + nonExistentId + " does not exist", exception.getMessage());
-//
-//        // Верифицируем: поиск вызвался, а метод удаления не дергался (выполнение прервалось)
-//        verify(bookRepo, times(1)).getBookById(nonExistentId);
-//        verify(bookRepo, never()).deleteBook(any(Book.class));
-//    }
-//}
+package com.maslov.booksmaslov.service.impl;
+
+import com.maslov.booksmaslov.domain.Author;
+import com.maslov.booksmaslov.domain.Book;
+import com.maslov.booksmaslov.dto.BookDto;
+import com.maslov.booksmaslov.exception.NoBookException;
+import com.maslov.booksmaslov.mapper.BookMapper;
+import com.maslov.booksmaslov.repository.BookRepo;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+//Я не использовал @SpringBootTest (Unit Test),
+// потому что для юнит-тестирования конкретного класса это считается «антипаттерном» и избыточностью
+@ExtendWith(MockitoExtension.class)
+class BookServiceUnitTest {
+
+    @Mock
+    private BookRepo bookRepo;
+
+    @Mock
+    private BookMapper mapper;
+
+    @InjectMocks
+    private BookServiceImpl bookService;
+
+    // Тестовые данные (Arrange), которые пересоздаются перед каждым тестом
+    private final long TEST_ID = 42L;
+    private BookDto bookDto;
+    private Book bookEntity;
+    private BookDto dto1;
+    private BookDto dto2;
+    // Входящие данные от клиента
+    private Book savedEntity;
+    private Book freshCopyFromDb;
+    // Ожидаемый результат
+    private BookDto expectedDto;
+
+    // Ожидаемый результат
+    private List<BookDto> expectedList;
+
+    @BeforeEach
+    void setUp() {
+        // Инициализация Record (BookDto). Поля должны соответствовать сигнатуре record'а.
+        bookDto = new BookDto(
+                null,// id - нет на входе при создании
+                "Clean Code", // title
+                "Robert Martin", // authors (строка из условия)
+                1L, // yearId
+                1L // genreId
+        );
+        // Инициализация Entity
+        bookEntity = new Book();
+        bookEntity.setId(TEST_ID);
+        bookEntity.setTitle("Clean Code");
+
+        savedEntity = new Book();
+        savedEntity.setId(42L);
+        savedEntity.setTitle("Effective Java");
+        savedEntity.setAuthors(Set.of(new Author("Test")));
+
+        freshCopyFromDb = new Book();
+        freshCopyFromDb.setId(42L);
+        freshCopyFromDb.setTitle("Effective Java");
+        freshCopyFromDb.setAuthors(Set.of(new Author("Test")));
+
+        // Ожидаемый DTO для финала
+        expectedDto = new BookDto(42L, "Effective Java", "Author A, Author B", 2L, 1L);
+    }
+
+    @Test
+    void getBook_WhenExists_ShouldReturnDto() {
+        // Arrange: настраиваем поведение зависимостей
+        given(bookRepo.findById(TEST_ID)).willReturn(Optional.of(bookEntity));
+
+        // Ожидаемый результат после работы маппера
+        BookDto expectedDto = new BookDto(TEST_ID, "Clean Code", "Robert Martin", 1980L, 1L);
+        given(mapper.toDto(bookEntity)).willReturn(expectedDto);
+
+        // Act: вызываем метод сервиса
+        BookDto result = bookService.getBook(TEST_ID);
+
+        // Assert: проверяем результат
+        assertNotNull(result);
+        assertEquals(TEST_ID, result.id());
+        assertEquals("Clean Code", result.title());
+
+        // Проверка взаимодействия (убедимся, что методы вызвались)
+        verify(bookRepo).findById(TEST_ID);
+        verify(mapper).toDto(bookEntity);
+    }
+
+    @Test
+    void getBook_WhenNotExists_ShouldThrowException() {
+        // Arrange: репозиторий возвращает пустой Optional
+        given(bookRepo.findById(TEST_ID)).willReturn(Optional.empty());
+
+        // Act & Assert: проверяем выброс исключения
+        NoBookException exception = assertThrows(NoBookException.class, () -> { bookService.getBook(TEST_ID); });
+        String expectedMessage = "Book with id " + TEST_ID + " does not exist";
+        assertTrue(exception.getMessage().contains(expectedMessage));
+    }
+
+    @Test
+    void getAllBook_WhenBooksExist_ReturnsListOfDtos() {
+        // Arrange: Специфичная настройка только для этого сценария
+        dto1 = new BookDto(1L, "Title 1", "Author 1", 2000L, 1L);
+        dto2 = new BookDto(2L, "Title 2", "Author 2", 2010L, 2L);
+        expectedList = List.of(dto1, dto2);
+        given(bookRepo.findAllBooks()).willReturn(expectedList);
+
+        // Act
+        List<BookDto> result = bookService.getAllBook();
+
+        // Assert
+        assertEquals(2, result.size());
+        assertEquals("Title 1", result.get(0).title());
+        assertEquals("Title 2", result.get(1).title());
+    }
+
+    @Test
+    void getAllBook_WhenNoBooksExist_ReturnsEmptyList() {
+        // Arrange: Другое поведение для другого сценария
+        given(bookRepo.findAllBooks()).willReturn(Collections.emptyList());
+
+        // Act
+        List<BookDto> result = bookService.getAllBook();
+
+        // Assert
+        assertTrue(result.isEmpty());
+    }
+
+    @Test void createBook_ValidInput_ReturnsSavedDto() {
+        // Arrange: Настраиваем поведение цепочки вызовов внутри сервиса
+        given(mapper.toEntity(bookDto)).willReturn(bookEntity);
+        given(bookRepo.save(bookEntity)).willReturn(savedEntity);
+        given(bookRepo.findById(42L)).willReturn(Optional.of(freshCopyFromDb));
+
+        given(mapper.toDto(freshCopyFromDb)).willReturn(expectedDto);
+
+        // Act
+        BookDto result = bookService.createBook(bookDto);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(42L, result.id());
+        assertEquals("Effective Java", result.title());
+
+        // Verify: Убеждаемся, что методы вызвались правильно
+        verify(mapper).toEntity(bookDto);
+        verify(bookRepo).save(bookEntity);
+        verify(bookRepo).findById(42L);
+    }
+
+    @Test void createBook_WithAuthors_AuthorsAreProcessed() {
+        // Arrange
+        String authorsString = "Author A, Author B";
+        BookDto dtoWithAuthors = new BookDto(null, "Clean Code", authorsString, 2L, 1L);
+
+        bookEntity = new Book();
+        bookEntity.setTitle("Effective Java");
+        bookEntity.setAuthors(Set.of(new Author("Author A"), new Author("Author B")));
+
+        given(mapper.toEntity(dtoWithAuthors)).willReturn(bookEntity);
+        given(bookRepo.save(bookEntity)).willReturn(savedEntity);
+        given(bookRepo.findById(42L)).willReturn(Optional.of(freshCopyFromDb));
+        given(mapper.toDto(freshCopyFromDb)).willReturn(expectedDto);
+
+        // Act
+        BookDto result = bookService.createBook(dtoWithAuthors);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(42L, result.id());
+
+        // Верифицируем, что сервис строго по цепочке передал объект от маппера в репозиторий
+        verify(mapper, times(1)).toEntity(dtoWithAuthors);
+        verify(bookRepo, times(1)).save(bookEntity);
+        verify(bookRepo, times(1)).findById(42L);
+        verify(mapper, times(1)).toDto(freshCopyFromDb);
+    }
+
+    @Test
+    void createBook_DatabaseThrowsException_TransactionRollsBack() {
+        // Arrange
+        given(mapper.toEntity(bookDto)).willReturn(bookEntity);
+
+        // Эмулируем падение БД (например, дубликат ключа)
+        given(bookRepo.save(bookEntity)).willThrow(new RuntimeException("DB Error"));
+
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            bookService.createBook(bookDto); });
+
+        assertTrue(exception.getMessage().contains("DB Error"));
+        // Важно: findById не должен вызываться, так как save упал
+        verify(bookRepo, never()).findById(anyLong());
+    }
+
+    @Test
+    void updateBook_ValidInput_ReturnsUpdatedDto() {
+        // Arrange
+        long id = 42L;
+
+        // Данные, которые сейчас лежат в базе
+        Book existingBook = new Book();
+        existingBook.setId(id);
+        existingBook.setTitle("Old Title");
+
+        // Новые данные от клиента
+        BookDto inputDto = new BookDto(null, "New Title", "New Author", 2024L, 2L);
+
+        // Ожидаемый результат
+        BookDto expectedOutput = new BookDto(42L, "New Title", "New Author", 2024L, 2L);
+
+        given(bookRepo.findById(id)).willReturn(Optional.of(existingBook));
+        given(mapper.toDto(existingBook)).willReturn(expectedOutput);
+
+        // Act
+        BookDto result = bookService.updateBook(id, inputDto);
+
+        // Assert
+        assertEquals("New Title", result.title());
+        assertEquals(2024L, result.yearId());
+
+        verify(bookRepo).findById(id);
+        verify(mapper).updateEntityFromDto(inputDto, existingBook);
+    }
+
+    @Test
+    void updateBook_VerifiesFieldsChangedInEntityBeforeSaving() {
+        // Arrange
+        long id = 1L;
+        Book existingBook = new Book();
+        existingBook.setId(id);
+        existingBook.setTitle("Old");
+
+        BookDto dto = new BookDto(null, "Brand New Title", "null", 2L, 1L);
+        given(bookRepo.findById(id)).willReturn(Optional.of(existingBook));
+
+        // СИМУЛЯЦИЯ: Говорим моку маппера при вызове метода взять второй аргумент (Book)
+        // и принудительно установить ему новое название из DTO
+        doAnswer(invocation -> {
+            Book book = invocation.getArgument(1); // Достаем @MappingTarget Book
+            book.setTitle(dto.title());
+            return null; // Метод void, возвращаем null
+        }).when(mapper).updateEntityFromDto(eq(dto), any(Book.class));
+
+        given(mapper.toDto(any(Book.class))).willReturn(dto);
+
+        // Act
+        bookService.updateBook(id, dto);
+
+        // Assert: Используем захват аргумента для mapper'а
+        ArgumentCaptor<Book> entityCaptor = ArgumentCaptor.forClass(Book.class);
+
+        verify(mapper).updateEntityFromDto(eq(dto), entityCaptor.capture());
+
+        Book capturedEntity = entityCaptor.getValue();
+
+        // Проверяем состояние объекта ПОСЛЕ работы маппера
+        assertEquals("Brand New Title", capturedEntity.getTitle());
+    }
+
+    @Test
+    void updateBook_IdNotFound_ShouldThrowNoBookException() {
+        // Arrange
+        long missingId = 999L;
+        BookDto anyDto = new BookDto(null, "X", "Y", 2000L, 1L);
+
+        given(bookRepo.findById(missingId)).willReturn(Optional.empty());
+
+        // Act & Assert
+        NoBookException ex = assertThrows(NoBookException.class, () -> { bookService.updateBook(missingId, anyDto);});
+
+        assertEquals("Book with id 999 does not exist", ex.getMessage());
+
+        verify(mapper, never()).updateEntityFromDto(any(), any()); // Маппер даже не должен был вызваться
+    }
+
+    @Test
+    void delBook_WhenBookExists_CallsRepoDelete() {
+
+        // Arrange
+        long existingId = 42L;
+
+        // Act
+        bookService.delBook(existingId);
+
+        // Assert
+        verify(bookRepo, times(1)).deleteById(existingId);
+        // Проверяем, что метод вызван ровно один раз с нужным аргументом
+    }
+
+    @Test void delBook_WhenBookDoesNotExist_DoesNotThrowException() {
+
+        // Arrange
+        long missingId = 999L;
+
+        // В Mock-репозитории deleteById по умолчанию ничего не делает (Void).
+        // Нам НЕ нужно писать given(...).willThrow(...) специально,
+        // мы хотим проверить поведение ПО УМОЛЧАНИЮ.
+
+        // Act & Assert
+        // JUnit 5 считает тест проваленным, если внутри него вылетает любое Exception.
+        // Просто вызываем метод. Если он упал - тест красный. Если промолчал - зеленый.
+
+        assertDoesNotThrow(() -> {
+            bookService.delBook(missingId);
+        });
+
+        // Дополнительно убеждаемся, что попытка удаления всё же была предпринята
+        verify(bookRepo).deleteById(missingId); }
+}
