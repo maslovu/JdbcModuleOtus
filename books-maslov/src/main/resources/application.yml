@@ -1,6 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/otus
+    #url: jdbc:postgresql://localhost:5432/otus
+    # для запуска в контейнере
+    url: jdbc:postgresql://host.docker.internal:5432/otus
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
