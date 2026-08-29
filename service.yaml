@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: books-app-service
+spec:
+  type: NodePort # Этот тип позволяет открыть порт контейнера наружу для локальной разработки
+  selector:
+    app: books-app # Сервис ищет поды с этим лейблом
+  ports:
+    - protocol: TCP
+      port: 8080      # Порт, который слушает сам сервис внутри кластера
+      targetPort: 8080 # Порт внутри вашего Spring Boot контейнера
+      nodePort: 30080  # ПОРТ НА ВАШЕМ КОМПЬЮТЕРЕ (Доступен в браузере как localhost:30080)

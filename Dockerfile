@@ -23,7 +23,3 @@ EXPOSE 8080
 
 # Команда для запуска JAR-файла
 ENTRYPOINT ["java", "-jar", "app.jar"]
-
-#в папке с Dockerfile
-# выполнить docker build -t books-app .
-# и затем docker run -d -p 8080:8080 --name my-books-container books-app

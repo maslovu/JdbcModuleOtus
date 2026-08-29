@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: books-app-deployment
+  labels:
+    app: books-app
+spec:
+  replicas: 2 # Запускаем 2 копии приложения. Если одна упадет, вторая продолжит работать!
+  selector:
+    matchLabels:
+      app: books-app
+  template:
+    metadata:
+      labels:
+        app: books-app
+    spec:
+      containers:
+        - name: books-app-container
+          image: books-app:latest # Имя вашего Docker-образа
+          imagePullPolicy: IfNotPresent # Берем локальный образ, если работаем в Minikube/Docker Desktop
+          ports:
+            - containerPort: 8080 # Внутренний порт Spring Boot приложения
+          env:
+            # Переопределяем URL базы данных для работы внутри кластера K8s
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgres-service:5432/otus"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "postgres"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "postgres"
