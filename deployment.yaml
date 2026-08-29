@@ -23,7 +23,7 @@ spec:
           env:
             # Переопределяем URL базы данных для работы внутри кластера K8s
             - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://postgres-service:5432/otus"
+              value: "jdbc:postgresql://host.docker.internal:5432/otus"
             - name: SPRING_DATASOURCE_USERNAME
               value: "postgres"
             - name: SPRING_DATASOURCE_PASSWORD
