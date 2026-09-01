@@ -10,8 +10,10 @@ import com.maslov.booksmaslov.service.impl.BookServiceImpl;
 import com.maslov.booksmaslov.service.impl.CommentServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.annotation.EnableRetry;
 
 @Configuration
+@EnableRetry
 public class BookMaslovConfiguration {
 
     @Bean

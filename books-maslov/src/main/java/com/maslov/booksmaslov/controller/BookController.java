@@ -2,8 +2,10 @@ package com.maslov.booksmaslov.controller;
 
 import com.maslov.booksmaslov.dto.BookDto;
 import com.maslov.booksmaslov.dto.CommentDto;
+import com.maslov.booksmaslov.dto.CommentEvent;
 import com.maslov.booksmaslov.dto.CommentRequest;
 import com.maslov.booksmaslov.service.BookService;
+import com.maslov.booksmaslov.service.CommentProcessingService;
 import com.maslov.booksmaslov.service.CommentService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -25,10 +27,12 @@ public class BookController {
 
     private final BookService bookService;
     private final CommentService commentService;
+    private final CommentProcessingService commentProcessingService;
 
-    public BookController(BookService service, CommentService commentService) {
+    public BookController(BookService service, CommentService commentService, CommentProcessingService commentProcessingService) {
         this.bookService = service;
         this.commentService = commentService;
+        this.commentProcessingService = commentProcessingService;
     }
 
     @GetMapping
@@ -59,6 +63,12 @@ public class BookController {
                                                     @Valid @RequestBody CommentRequest comment) {
         CommentDto createdComment = commentService.createComment(comment, bookId);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
+    }
+
+    @PostMapping("/comment/batch")
+    public ResponseEntity<String> createCommentsFromBatch(@Valid @RequestBody List<CommentEvent> comments) {
+        commentProcessingService.processWithRetry(comments);
+        return ResponseEntity.ok("OK");
     }
 
     @PutMapping("/{bookId}")
