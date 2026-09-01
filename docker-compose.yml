@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # 1. СЕРВИС KAFKA (На движке KRaft без Zookeeper)
+  kafka:
+    image: apache/kafka:3.7.0 # Официальный легкий образ от Apache с поддержкой KRaft
+    container_name: kafka-kraft
+    ports:
+      - "9092:9092"   # Порт для подключения с вашего компьютера (из IDEA)
+    environment:
+      # Настройки KRaft режима
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@localhost:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093'
+      # Настройка доступов:
+      # INSIDE (для вашего приложения в Docker) будет работать на порту 29092
+      # OUTSIDE (для вашей IDEA/Postman на хосте) будет работать на порту 9092
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,CONTROLLER://localhost:9093'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      # Генерируем фиксированный Cluster ID для корректного форматирования хранилища KRaft
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+
+  # 2. ВАШЕ SPRING BOOT ПРИЛОЖЕНИЕ
+  api-service:
+    build:
+      context: .       # Docker Compose берет ваш Dockerfile из текущей папки
+      dockerfile: Dockerfile
+    container_name: spring-api-service
+    ports:
+      - "8080:8080"   # Пробрасываем порт приложения наружу [19.2]
+    depends_on:
+      - kafka         # Сначала поднимется Kafka, затем ваше приложение
+    environment:
+      # Переопределяем адрес брокера, чтобы приложение внутри сети Docker видело Кафку
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+
+      # Если вашему приложению также нужна БД, можно переопределить её здесь:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://host.docker.internal:5432/otus"

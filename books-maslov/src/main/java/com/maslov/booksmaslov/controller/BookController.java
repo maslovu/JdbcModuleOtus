@@ -7,6 +7,7 @@ import com.maslov.booksmaslov.dto.CommentRequest;
 import com.maslov.booksmaslov.service.BookService;
 import com.maslov.booksmaslov.service.CommentProcessingService;
 import com.maslov.booksmaslov.service.CommentService;
+import com.maslov.booksmaslov.service.KafkaProducerService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,11 +29,13 @@ public class BookController {
     private final BookService bookService;
     private final CommentService commentService;
     private final CommentProcessingService commentProcessingService;
+    private final KafkaProducerService kafkaProducerService;
 
-    public BookController(BookService service, CommentService commentService, CommentProcessingService commentProcessingService) {
+    public BookController(BookService service, CommentService commentService, CommentProcessingService commentProcessingService, KafkaProducerService kafkaProducerService) {
         this.bookService = service;
         this.commentService = commentService;
         this.commentProcessingService = commentProcessingService;
+        this.kafkaProducerService = kafkaProducerService;
     }
 
     @GetMapping
@@ -61,8 +64,11 @@ public class BookController {
     @PostMapping("/{bookId}/comment")
     public ResponseEntity<CommentDto> createComment(@PathVariable long bookId,
                                                     @Valid @RequestBody CommentRequest comment) {
-        CommentDto createdComment = commentService.createComment(comment, bookId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdComment);
+        CommentEvent commentEvent = new CommentEvent();
+        commentEvent.setBookId(bookId);
+        commentEvent.setComment(comment);
+        kafkaProducerService.sendCommentEvent(commentEvent);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/comment/batch")

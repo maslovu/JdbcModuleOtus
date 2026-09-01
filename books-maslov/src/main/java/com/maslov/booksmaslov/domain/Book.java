@@ -32,6 +32,7 @@ import java.util.Set;
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "book_id")
     private long id;
 
     @Column(name = "name", unique = true, nullable = false)

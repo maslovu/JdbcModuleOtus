@@ -24,7 +24,7 @@ public class Comment {
     @Column(name = "comment_id")
     private long id;
 
-    @Column(name = "comment")
+    @Column(name = "comment_book")
     private String text;
 
     // Конструкторы, геттеры, сеттеры
