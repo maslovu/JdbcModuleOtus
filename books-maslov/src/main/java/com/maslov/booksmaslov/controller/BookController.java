@@ -66,7 +66,7 @@ public class BookController {
                                                     @Valid @RequestBody CommentRequest comment) {
         CommentEvent commentEvent = new CommentEvent();
         commentEvent.setBookId(bookId);
-        commentEvent.setComment(comment);
+        commentEvent.setComment(comment.getText());
         kafkaProducerService.sendCommentEvent(commentEvent);
         return ResponseEntity.ok().build();
     }

@@ -51,7 +51,7 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     @Override
     public CommentDto createComment(CommentRequest comment, long bookId) {
-        var newComment = new Comment(comment.text());
+        var newComment = new Comment(comment.getText());
         var book = bookRepo.findById(bookId)
                 .orElseThrow(() -> new EntityNotFoundException("Book not found with id: " + bookId));
         book.addComment(newComment);
@@ -76,7 +76,7 @@ public class CommentServiceImpl implements CommentService {
             }
 
             Comment comment = new Comment();
-            comment.setText(event.getComment().text());
+            comment.setText(event.getComment());
             comment.setBook(book);
             toSave.add(comment);
 
@@ -96,7 +96,7 @@ public class CommentServiceImpl implements CommentService {
         // Объект переходит в состояние Managed (управляется Hibernate)
         Comment commentFromDb = commentRepo.findById(commentId)
                 .orElseThrow(() -> new EntityNotFoundException("Comment not found with id: " + commentId));
-        commentFromDb.setText(newComment.text());
+        commentFromDb.setText(newComment.getText());
         // Вызывать явные методы сохранения типа em.merge() необязательно.
         // Так как метод помечен @Transactional, Hibernate в конце транзакции
         // сам заметит изменение текста и сгенерирует оптимальный SQL UPDATE.

@@ -1,10 +1,10 @@
 package com.maslov.booksmaslov.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 
-public record CommentRequest(
-        @NotBlank(message = "Текст комментария не может быть пустым")
-        @Size(max = 1000, message = "Комментарий слишком длинный (макс. 1000 символов)")
-        String text
-) {}
+@Data
+public class CommentRequest {
+    @JsonProperty("text")
+    private String text;
+}

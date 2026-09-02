@@ -7,5 +7,6 @@ import lombok.Data;
 public class CommentEvent {
     @JsonProperty("book_id")
     private long bookId;
-    private CommentRequest comment;
+    @JsonProperty("comment")
+    private String comment;
 }
