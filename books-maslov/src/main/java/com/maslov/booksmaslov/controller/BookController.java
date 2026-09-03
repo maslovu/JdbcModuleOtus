@@ -72,9 +72,9 @@ public class BookController {
     }
 
     @PostMapping("/comment/batch")
-    public ResponseEntity<String> createCommentsFromBatch(@Valid @RequestBody List<CommentEvent> comments) {
+    public ResponseEntity<Void> createCommentsFromBatch(@Valid @RequestBody List<CommentEvent> comments) {
         commentProcessingService.processWithRetry(comments);
-        return ResponseEntity.ok("OK");
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PutMapping("/{bookId}")
