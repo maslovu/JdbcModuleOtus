@@ -16,15 +16,16 @@ public class CommentProcessingService {
 
     // Инжектим наш основной сервис или репозиторий напрямую
     private final CommentService commentService;
+
     public CommentProcessingService(CommentService commentService) {
         this.commentService = commentService;
     }
 
     /**
-    * Этот метод выступает "оберткой". Он ловит конфликты и перезапускает процесс.
-    */
+     * Этот метод выступает "оберткой". Он ловит конфликты и перезапускает процесс.
+     */
     @Retryable(
-            value = { OptimisticLockingFailureException.class },
+            value = {OptimisticLockingFailureException.class},
             maxAttemptsExpression = "${retry.max-attempts:3}",
             backoff = @Backoff(delayExpression = "${retry.backoff-delay:1000}"))
     @Transactional(propagation = Propagation.REQUIRES_NEW)

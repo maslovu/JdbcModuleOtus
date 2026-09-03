@@ -16,13 +16,12 @@ public class KafkaProducerService {
     // Spring Boot автоматически создаст и внедрит этот бин на основе yaml-настроек
     private final KafkaTemplate<String, CommentEvent> kafkaTemplate;
 
-    // Имя топика, в который будут лететь сообщения
     private static final String TOPIC = "comments-topic";
 
     public void sendCommentEvent(CommentEvent request) {
         log.info("Отправка события в Kafka для книги ID: {}", request.getBookId());
 
-        // Метод send() работает асинхронно и возвращает CompletableFuture (в Spring Boot 3.x)
+        // Метод send() работает асинхронно
         CompletableFuture<SendResult<String, CommentEvent>> future =
                 kafkaTemplate.send(TOPIC, String.valueOf(request.getBookId()), request);
 

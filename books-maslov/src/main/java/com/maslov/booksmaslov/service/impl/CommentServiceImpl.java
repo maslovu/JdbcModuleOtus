@@ -13,8 +13,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.OptimisticLockingFailureException;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -103,7 +101,6 @@ public class CommentServiceImpl implements CommentService {
 
         // Принудительный flush в репозитории здесь не нужен, так как мы не генерируем новый ID,
         // он уже есть в объекте commentFromDb.
-        // commentRepo.updateComment(commentFromDb);
         return mapper.toDto(commentFromDb);
     }
 

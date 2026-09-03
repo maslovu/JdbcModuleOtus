@@ -26,14 +26,4 @@ public class EntityLoaderContext {
         return yearRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Year not found: ", id));
     }
-
-//    public Set<Author> stringToAuthors(String source) {
-//        if (source == null || source.isBlank()) {
-//            return Collections.emptySet(); }
-//        // Разделяем строку по запятой, убираем лишние пробелы и создаем объекты
-//        return Arrays.stream(source.split(","))
-//                .map(String::trim)
-//                .map(Author::new) // Предполагаем, что у Author есть конструктор (id, name)
-//                .collect(Collectors.toSet());
-//    }
 }

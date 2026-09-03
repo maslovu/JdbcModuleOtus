@@ -9,4 +9,3 @@ public class NoBookException extends RuntimeException {
         super(message);
     }
 }
-
