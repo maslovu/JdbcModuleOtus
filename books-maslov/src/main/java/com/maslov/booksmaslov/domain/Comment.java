@@ -24,15 +24,11 @@ public class Comment {
     @Column(name = "comment_id")
     private long id;
 
-    @Column(name = "comment")
+    @Column(name = "comment_book")
     private String text;
 
-    // Конструкторы, геттеры, сеттеры
-    @Setter
-    @Getter
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_id", nullable = false) // Имя колонки FK в таблице book
-//    @JsonBackReference // Это поле НЕ ПОЙДЕТ в JSON комментария. Цикл разорван!
+    @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
     public Comment(String comment) {
