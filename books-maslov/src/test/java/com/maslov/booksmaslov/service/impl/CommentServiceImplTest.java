@@ -8,7 +8,6 @@ import com.maslov.booksmaslov.dto.CommentRequest;
 import com.maslov.booksmaslov.mapper.CommentMapper;
 import com.maslov.booksmaslov.repository.BookRepo;
 import com.maslov.booksmaslov.repository.CommentRepo;
-import com.maslov.booksmaslov.service.CommentService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -53,66 +51,56 @@ class CommentServiceImplTest {
     @InjectMocks
     private CommentServiceImpl commentService;
 
-    // === Переменные для подготовки данных (@BeforeEach) ===
     private long bookId;
     private String commentText;
 
     private CommentRequest requestDto;
     private Book bookEntity;
-    private Comment savedComment; // То, что вернет репозиторий после save
+    private Comment savedComment;
     private CommentDto expectedOutput;
     private CommentEvent commentEvent;
 
     @BeforeEach
     void setUp() {
-        // Инициализация примитивов и простых объектов
         bookId = 42L;
         commentText = "Great read!";
 
-        // Входящий запрос от клиента
         requestDto = new CommentRequest();
         commentEvent = new CommentEvent();
         commentEvent.setComment(commentText);
         requestDto.setText(commentText);
 
-        // Сущности-заглушки
         bookEntity = new Book();
         bookEntity.setId(bookId);
         savedComment = new Comment(commentText);
-        savedComment.setId(100L); // База присвоила ID
-        savedComment.setBook(bookEntity); // Устанавливаем связь вручную для теста
+        savedComment.setId(100L);
+        savedComment.setBook(bookEntity);
 
-        // Ожидаемый результат на выходе
         expectedOutput = new CommentDto(100L, commentText, 1L);
     }
 
     @Test
     void getAllCommentForBook_WhenCommentsExist_ReturnsListOfDtos() {
-        // Arrange
+        // Given
         long bookId = 42L;
 
-        // Заглушки данных из БД
         Comment c1 = new Comment("Nice!");
         Comment c2 = new Comment("Bad...");
 
         List<Comment> dbResponse = List.of(c1, c2);
 
-        // Ожидаемые DTO на выходе
         CommentDto dto1 = new CommentDto(1L, "Nice!", 3L);
         CommentDto dto2 = new CommentDto(2L, "Bad...", 3L);
 
-        List<CommentDto> expectedDtos = List.of(dto1, dto2);
-
         given(commentRepo.getCommentsForBookByBookId(bookId)).willReturn(dbResponse);
 
-        // Настраиваем маппер так, чтобы он возвращал разные объекты в зависимости от входа
         given(mapper.toDto(c1)).willReturn(dto1);
         given(mapper.toDto(c2)).willReturn(dto2);
 
-        // Act
+        // When
         List<CommentDto> result = commentService.getAllCommentForBook(bookId);
 
-        // Assert
+        // Then
         assertNotNull(result);
         assertEquals(2, result.size());
         assertEquals("Nice!", result.get(0).getText());
@@ -125,22 +113,19 @@ class CommentServiceImplTest {
 
     @Test
     void getAllCommentForBook_NoComments_ReturnsEmptyList() {
-        // Arrange
+        // Given
         long bookId = 99L;
         given(commentRepo.getCommentsForBookByBookId(bookId))
                 .willReturn(Collections.emptyList());
 
-        // Возвращаем immutable пустой список
-        // Act
+        // When
         List<CommentDto> result = commentService.getAllCommentForBook(bookId);
 
-        // Assert
+        // Then
         assertNotNull(result);
 
         // Объект списка должен существовать
         assertTrue(result.isEmpty());
-
-        // Но он должен быть пустым
         assertEquals(0, result.size());
 
         verify(commentRepo).getCommentsForBookByBookId(bookId);
@@ -150,15 +135,15 @@ class CommentServiceImplTest {
     @Test
     void createComment_ValidInput_ReturnsSavedDto() {
 
-        // Arrange (Специфичные настройки поведения под этот тест)
+        // Given
         given(bookRepo.findById(bookId)).willReturn(Optional.of(bookEntity));
         given(commentRepo.save(any(Comment.class))).willReturn(savedComment);
         given(mapper.toDto(savedComment)).willReturn(expectedOutput);
 
-        // Act
+        // When
         CommentDto result = commentService.createComment(requestDto, bookId);
 
-        // Assert
+        // Then
         assertEquals(100L, result.getId());
         assertEquals(commentText, result.getText());
 
@@ -173,12 +158,10 @@ class CommentServiceImplTest {
         when(bookRepo.findById(nonExistentBookId)).thenReturn(Optional.empty());
 
         // When & Then
-        // Проверяем, что метод выбрасывает правильное стандартное JPA исключение
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             commentService.createComment(requestDto, nonExistentBookId);
         });
 
-        // Проверяем корректность сообщения об ошибке
         assertEquals("Book not found with id: " + nonExistentBookId, exception.getMessage());
 
         // Верифицируем: поиск книги вызвался, а сохранение и маппинг проигнорированы
@@ -189,57 +172,55 @@ class CommentServiceImplTest {
 
     @Test
     void createComment_AssignsBookToComment_BeforeSaving() {
-        // Arrange
+        // Given
         given(bookRepo.findById(bookId)).willReturn(Optional.of(bookEntity));
         ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
 
         given(commentRepo.save(captor.capture())).willReturn(savedComment);
 
-        // Act
+        // When
         commentService.createComment(requestDto, bookId);
 
-        // Assert
+        // Then
         Comment capturedValue = captor.getValue();
 
         assertNotNull(capturedValue.getBook(), "Связь 'книга-комментарий' должна быть установлена");
         assertEquals(bookId, capturedValue.getBook().getId(), "ID книги в комментарии должен совпадать");
     }
 
-//    @Test
-//    void updateComment_ValidInput_ReturnsUpdatedDto() {
-//        // Arrange
-//        long commentId = 42L;
-//        CommentEvent newText = new CommentEvent();
-//        newText.setComment("Updated text");
-//        CommentRequest request = new CommentRequest();
-//        request.setText("Updated text");
-//
-//        // Заглушка из БД (Старая версия)
-//        Comment existingComment = new Comment("Old text");
-//        existingComment.setId(commentId);
-//
-//        CommentDto expectedOutput = new CommentDto(42L, "Updated text", 2L);
-//
-//        given(commentRepo.findById(commentId)).willReturn(Optional.of(existingComment));
-//        given(mapper.toDto(any(Comment.class))).willReturn(expectedOutput);
-//
-//        // Act
-//        CommentDto result = commentService.updateComment(request, commentId);
-//
-//        // Assert результат вызова сервиса
-//        assertEquals(newText, result.getText());
-//
-//        // Проверка состояния самого объекта (State-based testing)
-//        // Важно проверить, что поле изменилось ДО передачи в mapper
-//        assertEquals(newText, existingComment.getText());
-//
-//        verify(commentRepo).findById(commentId);
-//        verify(mapper).toDto(existingComment); // Передаем ссылку на тот же объект
-//    }
+    @Test
+    void updateComment_ValidInput_ReturnsUpdatedDto() {
+        // Given
+        long commentId = 42L;
+        String newText = "Updated text";
+        CommentRequest request = new CommentRequest();
+        request.setText(newText);
+
+        Comment existingComment = new Comment("Old text");
+        existingComment.setId(commentId);
+
+        CommentDto expectedOutput = new CommentDto(42L, newText, 2L);
+
+        given(commentRepo.findById(commentId)).willReturn(Optional.of(existingComment));
+        given(mapper.toDto(any(Comment.class))).willReturn(expectedOutput);
+
+        // When
+        CommentDto result = commentService.updateComment(request, commentId);
+
+        // Then
+        assertEquals(newText, result.getText());
+
+        // Проверка состояния самого объекта (State-based testing)
+        // Важно проверить, что поле изменилось ДО передачи в mapper
+        assertEquals(newText, existingComment.getText());
+
+        verify(commentRepo).findById(commentId);
+        verify(mapper).toDto(existingComment);
+    }
 
     @Test
     void updateComment_NotFound_ShouldThrowException() {
-        // Arrange
+        // Given
         long missingId = 999L;
         CommentEvent newText = new CommentEvent();
         newText.setComment("Anything");
@@ -248,7 +229,7 @@ class CommentServiceImplTest {
 
         given(commentRepo.findById(missingId)).willReturn(Optional.empty());
 
-        // Act & Assert
+        // When & Then
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> {
             commentService.updateComment(request, missingId);
         });
@@ -257,12 +238,12 @@ class CommentServiceImplTest {
 
         // Критическая проверка: если findById вернул пусто, то setText вызван быть не мог
         verify(commentRepo).findById(missingId);
-        verify(mapper, never()).toDto(any()); // До маппера дело не дошло
+        verify(mapper, never()).toDto(any());
     }
 
     @Test
     void updateComment_VerifiesEntityStateBeforeMapping() {
-        // Arrange
+        // Given
         long id = 1L;
         String inputText = "New content";
         CommentRequest request = new CommentRequest();
@@ -278,14 +259,12 @@ class CommentServiceImplTest {
         ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
         given(mapper.toDto(captor.capture())).willReturn(new CommentDto(1L, inputText, 2L));
 
-        // Act
+        // When
         commentService.updateComment(request, id);
 
-        // Assert
+        // Then
         Comment capturedValue = captor.getValue();
 
-        // Это главная проверка этого теста:
-        // Мы смотрим внутрь объекта, который полетел в toDto()
         assertEquals(inputText, capturedValue.getText(), "Текст должен быть обновлен до вызова маппера");
         assertEquals(id, capturedValue.getId());
 
@@ -294,25 +273,24 @@ class CommentServiceImplTest {
 
     @Test
     void deleteComment_CommentExists_RemovesFromBookCollection() {
-        // Arrange
+        // Given
         long commentId = 42L;
         Book parentBook = new Book();
         parentBook.setId(1L);
 
         Comment targetComment = new Comment("To be deleted");
         targetComment.setId(commentId);
-        targetComment.setBook(parentBook); // Устанавливаем владельца
+        targetComment.setBook(parentBook);
 
-        // Инициализируем коллекцию и добавляем объект
         Set<Comment> comments = new HashSet<>();
         comments.add(targetComment);
         parentBook.setComments(comments);
         given(commentRepo.findById(commentId)).willReturn(Optional.of(targetComment));
 
-        // Act
+        // When
         commentService.deleteComment(commentId);
 
-        // Assert: Проверяем изменение состояния IN-MEMORY объектов
+        // Then: Проверяем изменение состояния IN-MEMORY объектов
         assertTrue(parentBook.getComments().isEmpty(), "Коллекция комментариев книги должна стать пустой");
         assertNull(targetComment.getBook(), "Ссылка на книгу внутри комментария должна быть очищена");
         // Примечание: вторая проверка пройдет только если ваш remove логика включает .setBook(null)
@@ -320,11 +298,11 @@ class CommentServiceImplTest {
 
     @Test
     void deleteComment_NotFound_ShouldThrowException() {
-        // Arrange
+        // Given
         long missingId = 999L;
         given(commentRepo.findById(missingId)).willReturn(Optional.empty());
 
-        // Act & Assert
+        // When & Then
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> {
             commentService.deleteComment(missingId);
         });
@@ -332,7 +310,6 @@ class CommentServiceImplTest {
         assertEquals("Comment not found with id: 999", ex.getMessage());
 
         verify(commentRepo).findById(missingId);
-        // Проверяем, что мы даже не пытались лезть в методы Book'а
         verifyNoInteractions(bookRepo);
     }
 }
