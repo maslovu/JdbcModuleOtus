@@ -9,11 +9,12 @@
     <fileSets>
         <fileSet>
             <!-- Откуда берем файлы миграций Liquibase -->
-            <directory>src/main/resources/schema</directory>
+            <directory>src/main/resources/changelog</directory>
             <!-- Куда складываем их внутри итогового ZIP-архива -->
             <outputDirectory>/</outputDirectory>
             <includes>
-                <include>**/*</include>
+                <include>**/*.yaml</include>
+                <include>**/*.xml</include>
             </includes>
         </fileSet>
     </fileSets>

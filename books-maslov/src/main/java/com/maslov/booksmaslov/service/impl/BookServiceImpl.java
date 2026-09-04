@@ -7,6 +7,9 @@ import com.maslov.booksmaslov.dto.BookDto;
 import com.maslov.booksmaslov.repository.BookRepo;
 import com.maslov.booksmaslov.service.BookService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -24,6 +27,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "book", key = "'book::' + #id")
     public BookDto getBook(long id) {
         var book = bookRepo.findById(id)
                 .orElseThrow(() -> new NoBookException("Book with id " + id + " does not exist"));
@@ -49,6 +53,10 @@ public class BookServiceImpl implements BookService {
         return mapper.toDto(freshCopy);
     }
 
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "books", key = "'book::' + #id") // Чистим конкретную книгу по ID
+            })
     @Transactional
     @Override
     public BookDto updateBook(long id, BookDto bookDto) {
@@ -57,9 +65,15 @@ public class BookServiceImpl implements BookService {
 
         mapper.updateEntityFromDto(bookDto, existingBook);
 
-        return mapper.toDto(existingBook);
+        Book updated = bookRepo.save(existingBook);
+
+        return mapper.toDto(updated);
     }
 
+    @Caching(
+            evict = {
+                    @CacheEvict(value = "books", key = "'book::' + #id") // Чистим конкретную книгу по ID
+            })
     @Transactional
     @Override
     public void delBook(long id) {

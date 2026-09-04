@@ -60,7 +60,6 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void createCommentFromBatch(List<CommentEvent> events) {
 
-
         List<Comment> toSave = new ArrayList<>(events.size());
 
         Set<Long> bookIds = events.stream().map(CommentEvent::getBookId).collect(Collectors.toSet());

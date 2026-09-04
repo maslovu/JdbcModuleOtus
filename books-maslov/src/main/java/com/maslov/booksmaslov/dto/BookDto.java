@@ -6,8 +6,7 @@ import com.maslov.booksmaslov.validator.ExistingId;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-
-public record BookDto(
+public record BookDto (
         Long id,
         @NotBlank String title,
         @NotBlank String authors,

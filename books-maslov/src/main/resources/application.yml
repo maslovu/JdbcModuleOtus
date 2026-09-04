@@ -1,20 +1,34 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/otus
-    # для запуска в контейнере
-    # url: jdbc:postgresql://host.docker.internal:5432/otus
+    url: jdbc:postgresql://postgres-service:5432/otus
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
 
   liquibase:
-    change-log: classpath:schema/db-master-changelog.xml
-    enabled: true
+    default-schema: public
+    change-log: classpath:changelog/db-master-changelog.xml
+    database-change-log-lock-table: DATABASECHANGELOGLOCK
   kafka:
-    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka-service:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  data:
+    redis:
+      host: redis-service
+      port: 6379
+      password: ${REDIS_PASSWORD}
+      timeout: 2000ms
+      connect-timeout: 2000ms
+      jedis:
+        pool:
+          max-active: 10
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 60000 # TTL 10 минут (пример)
 
 
   jpa:

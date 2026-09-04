@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # 1. СЕРВИС KAFKA (На движке KRaft без Zookeeper)
   kafka:
@@ -33,9 +31,22 @@ services:
       - "8080:8080"   # Пробрасываем порт приложения наружу [19.2]
     depends_on:
       - kafka         # Сначала поднимется Kafka, затем ваше приложение
+      - redis
     environment:
       # Переопределяем адрес брокера, чтобы приложение внутри сети Docker видело Кафку
       SPRING_KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
 
       # Если вашему приложению также нужна БД, можно переопределить её здесь:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://host.docker.internal:5432/otus"
+  redis:
+    image: redis:7-alpine # Легковесный официальный образ
+    container_name: redis-cache
+    restart: always
+    ports:
+      - "6379:6379" # Проброс порта (нужен только если хотите стучаться из консоли хоста)
+    volumes:
+      - redis_data:/data # Сохранение данных на диск (чтобы не терять кэш при перезапуске)
+    command: ["redis-server", "--appendonly", "yes"] # Включаем сохранение на диск (AOF)
+
+volumes:
+  redis_data: # Объявление тома для хранения данных
