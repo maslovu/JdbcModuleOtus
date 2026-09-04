@@ -5,7 +5,7 @@ metadata:
   labels:
     app: api-app
 spec:
-  replicas: 2 # Две реплики для отказоустойчивости
+  replicas: 2
   selector:
     matchLabels:
       app: api-app
@@ -16,20 +16,31 @@ spec:
     spec:
       containers:
         - name: api-app-container
-          image: books-maslov-2.1.1:1.0 # Имя собранного вами Docker-образа
+          image: books-maslov-2.2.0:1.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
           env:
-            # Направляем Spring Boot на нашу Кафку внутри Kubernetes кластера
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
               value: "kafka-service:9092"
+
             - name: SPRING_DATASOURCE_URL
               value: "jdbc:postgresql://postgres-service:5432/otus"
             - name: SPRING_DATASOURCE_USERNAME
               value: "postgres"
             - name: SPRING_DATASOURCE_PASSWORD
               value: "postgres"
+
+            - name: SPRING_REDIS_HOST
+              value: "redis-service"
+            - name: SPRING_DATA_REDIS_HOST
+              value: "redis-service"
+            # Передача пароля через переменную окружения (лучше брать из Secret)
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: password
 ---
 apiVersion: v1
 kind: Service

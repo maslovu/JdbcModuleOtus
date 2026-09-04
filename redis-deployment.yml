@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deploy
+  labels:
+    app: redis
+spec:
+  replicas: 1 # Для Master-Slave схем реплик будет больше
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7.2-alpine # Официальный легковесный образ
+          # Ключевой момент: разрешить подключения со всех IP
+          command: ["redis-server"]
+          ports:
+            - containerPort: 6379
+
+          # Передача пароля через переменную окружения (лучше брать из Secret)
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: password
+
+          # Настройка самого конфига сервера через аргументы
+          args: ["--protected-mode", "no",
+                 "--requirepass", "$(REDIS_PASSWORD)",
+                 "--appendonly", "yes"]
+
+          # Монтирование диска для сохранения данных на диск (RDB/AOF)
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-data-pvc
