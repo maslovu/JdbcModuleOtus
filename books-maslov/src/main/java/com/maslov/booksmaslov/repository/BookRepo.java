@@ -18,7 +18,7 @@ public interface BookRepo extends JpaRepository<Book, Long> {
             "g.id AS genreId, " +
             "y.id AS yearId ) " +
             "FROM Book b " +
-            "JOIN b.authors a " +
+            "LEFT JOIN b.authors a " +
             "LEFT JOIN b.genre g " +
             "LEFT JOIN b.year y ")
     List<BookDto> findAllBooks();
