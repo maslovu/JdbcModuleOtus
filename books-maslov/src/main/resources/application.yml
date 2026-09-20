@@ -1,6 +1,7 @@
 spring:
   datasource:
     url: jdbc:postgresql://postgres-service:5432/otus
+#    url: jdbc:postgresql://localhost:5432/otus
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
