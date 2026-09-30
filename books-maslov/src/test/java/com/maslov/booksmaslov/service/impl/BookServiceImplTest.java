@@ -217,6 +217,7 @@ class BookServiceImplTest {
 
         BookDto expectedOutput = new BookDto(42L, "New Title", "New Author", 2024L, 2L);
 
+        given(bookRepo.save(any(Book.class))).willReturn(existingBook);
         given(bookRepo.findById(id)).willReturn(Optional.of(existingBook));
         given(mapper.toDto(existingBook)).willReturn(expectedOutput);
 
@@ -248,6 +249,7 @@ class BookServiceImplTest {
             return null;
         }).when(mapper).updateEntityFromDto(eq(dto), any(Book.class));
 
+        given(bookRepo.save(any(Book.class))).willReturn(existingBook);
         given(mapper.toDto(any(Book.class))).willReturn(dto);
 
         // When

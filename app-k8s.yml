@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: api-app-container
-          image: books-maslov-2.2.0:1.0
-          imagePullPolicy: IfNotPresent
+          image: books-maslov-2.2.1:1.0
+          imagePullPolicy: IfNotPresent # Важно для локальной разработки
           ports:
             - containerPort: 8080
           env:
