@@ -12,7 +12,6 @@ import java.util.List;
 
 @Service
 public class CommentProcessingService {
-    private static final int MAX_ATTEMPTS = 3;
 
     // Инжектим наш основной сервис или репозиторий напрямую
     private final CommentService commentService;
@@ -30,7 +29,6 @@ public class CommentProcessingService {
             backoff = @Backoff(delayExpression = "${retry.backoff-delay:1000}"))
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void processWithRetry(List<CommentEvent> events) {
-        // Вызываем внутреннюю логику без обработки ошибок внутри
         commentService.createCommentFromBatch(events);
     }
 }
