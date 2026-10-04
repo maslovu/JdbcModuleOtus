@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
 @Service
 @RequiredArgsConstructor
 public class KafkaProducerService {
-    // Spring Boot автоматически создаст и внедрит этот бин на основе yaml-настроек
+
     private final KafkaTemplate<String, CommentEvent> kafkaTemplate;
 
     private static final String TOPIC = "comments-topic";
