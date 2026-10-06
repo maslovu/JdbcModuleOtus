@@ -13,7 +13,6 @@ import java.util.List;
 @Service
 public class CommentProcessingService {
 
-    // Инжектим наш основной сервис или репозиторий напрямую
     private final CommentService commentService;
 
     public CommentProcessingService(CommentService commentService) {

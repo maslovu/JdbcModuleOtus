@@ -2,6 +2,8 @@ package com.maslov.booksmaslov.service.impl;
 
 import com.maslov.booksmaslov.domain.Author;
 import com.maslov.booksmaslov.domain.Book;
+import com.maslov.booksmaslov.domain.Genre;
+import com.maslov.booksmaslov.domain.YearOfPublish;
 import com.maslov.booksmaslov.dto.BookDto;
 import com.maslov.booksmaslov.exception.NoBookException;
 import com.maslov.booksmaslov.mapper.BookMapper;
@@ -112,21 +114,62 @@ class BookServiceImplTest {
     }
 
     @Test
-    void getAllBook_WhenBooksExist_ReturnsListOfDtos() {
+    void getAllBook_WhenBooksExist_ReturnsListOfDTOs() {
         // Given
-        BookDto dto1 = new BookDto(1L, "Title 1", "Author 1", 2000L, 1L);
-        BookDto dto2 = new BookDto(2L, "Title 2", "Author 2", 2010L, 2L);
-        // Ожидаемый результат
-        List<BookDto> expectedList = List.of(dto1, dto2);
-        given(bookRepo.findAllBooks()).willReturn(expectedList);
+        Genre genre1 = new Genre();
+        genre1.setId(1L);
+        YearOfPublish year1 = new YearOfPublish();
+        year1.setId(10L);
+        Author author1 = new Author();
+        author1.setName("Author 1");
+
+        Book book1 = new Book();
+        book1.setId(1L);
+        book1.setTitle("Title 1");
+        book1.setGenre(genre1);
+        book1.setYear(year1);
+        book1.setAuthors(Set.of(author1));
+
+        Genre genre2 = new Genre();
+        genre2.setId(2L);
+        YearOfPublish year2 = new YearOfPublish();
+        year2.setId(20L);
+        Author author2 = new Author();
+        author2.setName("Author 2");
+
+        Book book2 = new Book();
+        book2.setId(2L);
+        book2.setTitle("Title 2");
+        book2.setGenre(genre2);
+        book2.setYear(year2);
+        book2.setAuthors(Set.of(author2));
+
+        List<Book> dbBooks = List.of(book1, book2);
+
+        BookDto expectedDto1 = new BookDto(1L, "Title 1", "Author 1", 10L, 1L);
+        BookDto expectedDto2 = new BookDto(2L, "Title 2", "Author 2", 20L, 2L);
+
+        given(bookRepo.findAllBooks()).willReturn(dbBooks);
+        given(mapper.toDto(book1)).willReturn(expectedDto1);
+        given(mapper.toDto(book2)).willReturn(expectedDto2);
 
         // When
         List<BookDto> result = bookService.getAllBook();
 
         // Then
         assertEquals(2, result.size());
+
+        assertEquals(1L, result.get(0).id());
         assertEquals("Title 1", result.get(0).title());
+        assertEquals("Author 1", result.get(0).authors());
+        assertEquals(10L, result.get(0).yearId());
+        assertEquals(1L, result.get(0).genreId());
+
+        assertEquals(2L, result.get(1).id());
         assertEquals("Title 2", result.get(1).title());
+        assertEquals("Author 2", result.get(1).authors());
+        assertEquals(20L, result.get(1).yearId());
+        assertEquals(2L, result.get(1).genreId());
     }
 
     @Test
