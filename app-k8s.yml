@@ -51,6 +51,12 @@ spec:
   selector:
     app: api-app
   ports:
-    - protocol: TCP
+    - name: http-business
+      protocol: TCP
       port: 8080
       targetPort: 8080
+
+    - name: http-management   # Название для сбора метрик Prometheus
+      protocol: TCP
+      port: 8082
+      targetPort: 8082
