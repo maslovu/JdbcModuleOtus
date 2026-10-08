@@ -47,7 +47,8 @@ kind: Service
 metadata:
   name: api-app-service
 spec:
-  type: ClusterIP # Сервисы с типом ClusterIP доступны строго внутри сети Kubernetes, не открывают порты на хост-компьютере
+#  type: ClusterIP # Сервисы с типом ClusterIP доступны строго внутри сети Kubernetes, не открывают порты на хост-компьютере
+  type: NodePort # Используем NodePort для внешнего доступа
   selector:
     app: api-app
   ports:
@@ -60,3 +61,4 @@ spec:
       protocol: TCP
       port: 8082
       targetPort: 8082
+      nodePort: 30082 # Выделяем фиксированный внешний порт
