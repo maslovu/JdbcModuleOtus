@@ -1,20 +1,21 @@
 package com.maslov.booksmaslov.service.impl;
 
+import com.maslov.booksmaslov.cache.EvictBookCache;
 import com.maslov.booksmaslov.domain.Book;
-import com.maslov.booksmaslov.exception.NoBookException;
+import com.maslov.booksmaslov.exception.ResourceNotFoundException;
 import com.maslov.booksmaslov.mapper.BookMapper;
 import com.maslov.booksmaslov.dto.BookDto;
 import com.maslov.booksmaslov.repository.BookRepo;
 import com.maslov.booksmaslov.service.BookService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Slf4j
+@Service
 public class BookServiceImpl implements BookService {
 
     private final BookRepo bookRepo;
@@ -30,18 +31,19 @@ public class BookServiceImpl implements BookService {
     @Cacheable(value = "book", key = "'book::' + #id")
     public BookDto getBook(long id) {
         var book = bookRepo.findById(id)
-                .orElseThrow(() -> new NoBookException("Book with id " + id + " does not exist"));
+                .orElseThrow(() -> new ResourceNotFoundException("Book", id));
         return mapper.toDto(book);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<BookDto> getAllBook() {
+    public List<BookDto> getAllBooks() {
         return bookRepo.findAllBooks().stream()
                 .map(mapper::toDto)
                 .toList();
     }
 
+    @EvictBookCache
     @Transactional
     @Override
     public BookDto createBook(BookDto bookDto) {
@@ -55,15 +57,11 @@ public class BookServiceImpl implements BookService {
         return mapper.toDto(freshCopy);
     }
 
-    @Caching(
-            evict = {
-                    @CacheEvict(value = "books", key = "'book::' + #id") // Чистим конкретную книгу по ID
-            })
+    @EvictBookCache
     @Transactional
     @Override
     public BookDto updateBook(long id, BookDto bookDto) {
-        Book existingBook = bookRepo.findById(id)
-                .orElseThrow(() -> new NoBookException("Book with id " + id + " does not exist"));
+        Book existingBook = bookRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Book", id));
 
         mapper.updateEntityFromDto(bookDto, existingBook);
 
@@ -72,13 +70,10 @@ public class BookServiceImpl implements BookService {
         return mapper.toDto(updated);
     }
 
-    @Caching(
-            evict = {
-                    @CacheEvict(value = "books", key = "'book::' + #id") // Чистим конкретную книгу по ID
-            })
+    @EvictBookCache
     @Transactional
     @Override
-    public void delBook(long id) {
+    public void deleteBook(long id) {
         //Отсутствие книги не является ошибкой (метод должен быть идемпотентным)
         bookRepo.deleteById(id);
     }

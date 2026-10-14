@@ -1,10 +1,5 @@
 package com.maslov.booksmaslov.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
 
-@Data
-public class CommentRequest {
-    @JsonProperty("text")
-    private String text;
-}
+public record CommentRequest(@JsonProperty("text") String text) {}

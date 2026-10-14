@@ -40,7 +40,7 @@ public class BookController {
 
     @GetMapping
     public ResponseEntity<List<BookDto>> getAllBooks() {
-        var books = bookService.getAllBook();
+        var books = bookService.getAllBooks();
         return ResponseEntity.ok(books);
     }
 
@@ -62,13 +62,11 @@ public class BookController {
     }
 
     @PostMapping("/{bookId}/comment")
-    public ResponseEntity<CommentDto> createComment(@PathVariable long bookId,
+    public ResponseEntity<Void> createComment(@PathVariable long bookId,
                                                     @Valid @RequestBody CommentRequest comment) {
-        CommentEvent commentEvent = new CommentEvent();
-        commentEvent.setBookId(bookId);
-        commentEvent.setComment(comment.getText());
+        CommentEvent commentEvent = new CommentEvent(bookId, comment.text());
         kafkaProducerService.sendCommentEvent(commentEvent);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping("/comment/batch")
@@ -85,21 +83,23 @@ public class BookController {
         return ResponseEntity.ok(updatedBook);
     }
 
-    @PutMapping("/comment/{commentId}")
+    @PutMapping("/{bookId}/comment/{commentId}")
     public ResponseEntity<CommentDto> updateComment(@PathVariable long commentId,
+                                                    @PathVariable long bookId,
                                                     @Valid @RequestBody CommentRequest comment) {
-        CommentDto updatedComment = commentService.updateComment(comment, commentId);
+        CommentDto updatedComment = commentService.updateComment(comment, commentId, bookId);
         return ResponseEntity.ok(updatedComment);
     }
 
     @DeleteMapping("/{bookId}")
     public void deleteBook(@PathVariable long bookId) {
-        bookService.delBook(bookId);
+        bookService.deleteBook(bookId);
     }
 
-    @DeleteMapping("/comments/{commentId}")
-    public ResponseEntity<Void> deleteComment(@PathVariable long commentId) {
-        commentService.deleteComment(commentId);
+    @DeleteMapping("/{bookId}/comments/{commentId}")
+    public ResponseEntity<Void> deleteComment(@PathVariable long commentId,
+                                              @PathVariable long bookId) {
+        commentService.deleteComment(commentId, bookId);
         return ResponseEntity.noContent().build();
     }
 }

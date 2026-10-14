@@ -3,12 +3,11 @@ package com.maslov.booksmaslov.service.impl;
 import com.maslov.booksmaslov.domain.Book;
 import com.maslov.booksmaslov.domain.Comment;
 import com.maslov.booksmaslov.dto.CommentDto;
-import com.maslov.booksmaslov.dto.CommentEvent;
 import com.maslov.booksmaslov.dto.CommentRequest;
+import com.maslov.booksmaslov.exception.ResourceNotFoundException;
 import com.maslov.booksmaslov.mapper.CommentMapper;
 import com.maslov.booksmaslov.repository.BookRepo;
 import com.maslov.booksmaslov.repository.CommentRepo;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,31 +51,27 @@ class CommentServiceImplTest {
     private CommentServiceImpl commentService;
 
     private long bookId;
-    private String commentText;
 
-    private CommentRequest requestDto;
+    private CommentRequest commentRequest;
     private Book bookEntity;
     private Comment savedComment;
     private CommentDto expectedOutput;
-    private CommentEvent commentEvent;
+
+    private final String COMMENT_TEXT = "Great read!";
 
     @BeforeEach
     void setUp() {
         bookId = 42L;
-        commentText = "Great read!";
 
-        requestDto = new CommentRequest();
-        commentEvent = new CommentEvent();
-        commentEvent.setComment(commentText);
-        requestDto.setText(commentText);
+        commentRequest = new CommentRequest(COMMENT_TEXT);
 
         bookEntity = new Book();
         bookEntity.setId(bookId);
-        savedComment = new Comment(commentText);
+        savedComment = new Comment(COMMENT_TEXT);
         savedComment.setId(100L);
         savedComment.setBook(bookEntity);
 
-        expectedOutput = new CommentDto(100L, commentText, 1L);
+        expectedOutput = new CommentDto(100L, COMMENT_TEXT, 1L);
     }
 
     @Test
@@ -103,8 +98,8 @@ class CommentServiceImplTest {
         // Then
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertEquals("Nice!", result.get(0).getText());
-        assertEquals("Bad...", result.get(1).getText());
+        assertEquals("Nice!", result.get(0).text());
+        assertEquals("Bad...", result.get(1).text());
 
         verify(commentRepo).getCommentsForBookByBookId(bookId);
         verify(mapper).toDto(c1);
@@ -126,7 +121,6 @@ class CommentServiceImplTest {
 
         // Объект списка должен существовать
         assertTrue(result.isEmpty());
-        assertEquals(0, result.size());
 
         verify(commentRepo).getCommentsForBookByBookId(bookId);
         verify(mapper, never()).toDto(any()); // Маппер не должен вызываться ни разу
@@ -141,28 +135,28 @@ class CommentServiceImplTest {
         given(mapper.toDto(savedComment)).willReturn(expectedOutput);
 
         // When
-        CommentDto result = commentService.createComment(requestDto, bookId);
+        CommentDto result = commentService.createComment(commentRequest, bookId);
 
         // Then
-        assertEquals(100L, result.getId());
-        assertEquals(commentText, result.getText());
+        assertEquals(100L, result.id());
+        assertEquals(COMMENT_TEXT, result.text());
 
         verify(bookRepo).findById(bookId);
         verify(commentRepo).save(any(Comment.class));
         verify(mapper).toDto(savedComment); }
 
     @Test
-    void createComment_WhenBookDoesNotExist_ShouldThrowEntityNotFoundException() {
+    void createComment_WhenBookDoesNotExist_ShouldThrowResourceNotFoundException() {
         // Given
         long nonExistentBookId = 999L;
         when(bookRepo.findById(nonExistentBookId)).thenReturn(Optional.empty());
 
         // When & Then
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            commentService.createComment(requestDto, nonExistentBookId);
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            commentService.createComment(commentRequest, nonExistentBookId);
         });
 
-        assertEquals("Book not found with id: " + nonExistentBookId, exception.getMessage());
+        assertEquals("Book/comment not found with id : " + nonExistentBookId, exception.getMessage());
 
         // Верифицируем: поиск книги вызвался, а сохранение и маппинг проигнорированы
         verify(bookRepo, times(1)).findById(nonExistentBookId);
@@ -179,7 +173,7 @@ class CommentServiceImplTest {
         given(commentRepo.save(captor.capture())).willReturn(savedComment);
 
         // When
-        commentService.createComment(requestDto, bookId);
+        commentService.createComment(commentRequest, bookId);
 
         // Then
         Comment capturedValue = captor.getValue();
@@ -193,8 +187,7 @@ class CommentServiceImplTest {
         // Given
         long commentId = 42L;
         String newText = "Updated text";
-        CommentRequest request = new CommentRequest();
-        request.setText(newText);
+        CommentRequest request = new CommentRequest(newText);
 
         Comment existingComment = new Comment("Old text");
         existingComment.setId(commentId);
@@ -205,10 +198,10 @@ class CommentServiceImplTest {
         given(mapper.toDto(any(Comment.class))).willReturn(expectedOutput);
 
         // When
-        CommentDto result = commentService.updateComment(request, commentId);
+        CommentDto result = commentService.updateComment(request, commentId, bookId);
 
         // Then
-        assertEquals(newText, result.getText());
+        assertEquals(newText, result.text());
 
         // Проверка состояния самого объекта (State-based testing)
         // Важно проверить, что поле изменилось ДО передачи в mapper
@@ -222,16 +215,13 @@ class CommentServiceImplTest {
     void updateComment_NotFound_ShouldThrowException() {
         // Given
         long missingId = 999L;
-        CommentEvent newText = new CommentEvent();
-        newText.setComment("Anything");
-        CommentRequest request = new CommentRequest();
-        request.setText("Anything");
 
+        CommentRequest request = new CommentRequest(COMMENT_TEXT);
         given(commentRepo.findById(missingId)).willReturn(Optional.empty());
 
         // When & Then
-        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> {
-            commentService.updateComment(request, missingId);
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> {
+            commentService.updateComment(request, missingId, bookId);
         });
 
         assertTrue(ex.getMessage().contains("Comment not found"));
@@ -246,10 +236,9 @@ class CommentServiceImplTest {
         // Given
         long id = 1L;
         String inputText = "New content";
-        CommentRequest request = new CommentRequest();
-        CommentEvent event = new CommentEvent();
-        event.setComment(inputText);
-        request.setText(inputText);
+        CommentRequest request = new CommentRequest(inputText);
+//        CommentEvent event = new CommentEvent(inputText);
+//        event.setComment(inputText);
 
         Comment dbComment = new Comment("Initial");
         dbComment.setId(id);
@@ -260,7 +249,7 @@ class CommentServiceImplTest {
         given(mapper.toDto(captor.capture())).willReturn(new CommentDto(1L, inputText, 2L));
 
         // When
-        commentService.updateComment(request, id);
+        commentService.updateComment(request, id, bookId);
 
         // Then
         Comment capturedValue = captor.getValue();
@@ -288,7 +277,7 @@ class CommentServiceImplTest {
         given(commentRepo.findById(commentId)).willReturn(Optional.of(targetComment));
 
         // When
-        commentService.deleteComment(commentId);
+        commentService.deleteComment(commentId, bookId);
 
         // Then: Проверяем изменение состояния IN-MEMORY объектов
         assertTrue(parentBook.getComments().isEmpty(), "Коллекция комментариев книги должна стать пустой");
@@ -303,11 +292,11 @@ class CommentServiceImplTest {
         given(commentRepo.findById(missingId)).willReturn(Optional.empty());
 
         // When & Then
-        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () -> {
-            commentService.deleteComment(missingId);
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> {
+            commentService.deleteComment(missingId, bookId);
         });
 
-        assertEquals("Comment not found with id: 999", ex.getMessage());
+        assertEquals("Comment not found with id : 999", ex.getMessage());
 
         verify(commentRepo).findById(missingId);
         verifyNoInteractions(bookRepo);

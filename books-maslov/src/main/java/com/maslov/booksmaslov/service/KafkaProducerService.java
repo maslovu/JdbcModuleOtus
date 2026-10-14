@@ -19,11 +19,11 @@ public class KafkaProducerService {
     private static final String TOPIC = "comments-topic";
 
     public void sendCommentEvent(CommentEvent request) {
-        log.info("Отправка события в Kafka для книги ID: {}", request.getBookId());
+        log.info("Отправка события в Kafka для книги ID: {}", request.bookId());
 
         // Метод send() работает асинхронно
         CompletableFuture<SendResult<String, CommentEvent>> future =
-                kafkaTemplate.send(TOPIC, String.valueOf(request.getBookId()), request);
+                kafkaTemplate.send(TOPIC, String.valueOf(request.bookId()), request);
 
         // Навешиваем коллбэки, чтобы логировать успех или ошибку отправки
         future.whenComplete((result, ex) -> {

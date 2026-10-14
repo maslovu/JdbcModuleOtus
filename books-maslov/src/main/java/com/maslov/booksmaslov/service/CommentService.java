@@ -8,13 +8,13 @@ import java.util.List;
 
 public interface CommentService {
 
-    List<CommentDto> getAllCommentForBook(long idForBook);
+    List<CommentDto> getAllCommentForBook(long bookId);
 
-    CommentDto createComment(CommentRequest comment, long idForBook);
+    CommentDto createComment(CommentRequest comment, long bookId);
 
     void createCommentFromBatch(List<CommentEvent> comments);
 
-    CommentDto updateComment(CommentRequest newComment, long commentId);
+    CommentDto updateComment(CommentRequest newComment, long commentId, long bookId);
 
-    void deleteComment(long idForBook);
+    void deleteComment(long commentId, long bookId);
 }

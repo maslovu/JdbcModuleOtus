@@ -23,7 +23,7 @@ public class CommentProcessingService {
      * Этот метод выступает "оберткой". Он ловит конфликты и перезапускает процесс.
      */
     @Retryable(
-            value = {OptimisticLockingFailureException.class},
+            retryFor = {OptimisticLockingFailureException.class},
             maxAttemptsExpression = "${retry.max-attempts:3}",
             backoff = @Backoff(delayExpression = "${retry.backoff-delay:1000}"))
     @Transactional(propagation = Propagation.REQUIRES_NEW)

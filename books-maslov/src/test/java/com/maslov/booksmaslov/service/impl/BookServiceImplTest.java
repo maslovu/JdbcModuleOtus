@@ -5,7 +5,7 @@ import com.maslov.booksmaslov.domain.Book;
 import com.maslov.booksmaslov.domain.Genre;
 import com.maslov.booksmaslov.domain.YearOfPublish;
 import com.maslov.booksmaslov.dto.BookDto;
-import com.maslov.booksmaslov.exception.NoBookException;
+import com.maslov.booksmaslov.exception.ResourceNotFoundException;
 import com.maslov.booksmaslov.mapper.BookMapper;
 import com.maslov.booksmaslov.repository.BookRepo;
 import org.junit.jupiter.api.BeforeEach;
@@ -108,8 +108,8 @@ class BookServiceImplTest {
         given(bookRepo.findById(TEST_ID)).willReturn(Optional.empty());
 
         // When & Then
-        NoBookException exception = assertThrows(NoBookException.class, () -> { bookService.getBook(TEST_ID); });
-        String expectedMessage = "Book with id " + TEST_ID + " does not exist";
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> { bookService.getBook(TEST_ID); });
+        String expectedMessage = "Book not found with id : " + TEST_ID;
         assertTrue(exception.getMessage().contains(expectedMessage));
     }
 
@@ -154,7 +154,7 @@ class BookServiceImplTest {
         given(mapper.toDto(book2)).willReturn(expectedDto2);
 
         // When
-        List<BookDto> result = bookService.getAllBook();
+        List<BookDto> result = bookService.getAllBooks();
 
         // Then
         assertEquals(2, result.size());
@@ -178,7 +178,7 @@ class BookServiceImplTest {
         given(bookRepo.findAllBooks()).willReturn(Collections.emptyList());
 
         // When
-        List<BookDto> result = bookService.getAllBook();
+        List<BookDto> result = bookService.getAllBooks();
 
         // Then
         assertTrue(result.isEmpty());
@@ -317,9 +317,9 @@ class BookServiceImplTest {
         given(bookRepo.findById(missingId)).willReturn(Optional.empty());
 
         // When & Then
-        NoBookException ex = assertThrows(NoBookException.class, () -> { bookService.updateBook(missingId, anyDto);});
+        ResourceNotFoundException ex = assertThrows(ResourceNotFoundException.class, () -> { bookService.updateBook(missingId, anyDto);});
 
-        assertEquals("Book with id 999 does not exist", ex.getMessage());
+        assertEquals("Book not found with id : " + missingId, ex.getMessage());
 
         verify(mapper, never()).updateEntityFromDto(any(), any()); // Маппер даже не должен был вызваться
     }
@@ -331,7 +331,7 @@ class BookServiceImplTest {
         long existingId = 42L;
 
         // When
-        bookService.delBook(existingId);
+        bookService.deleteBook(existingId);
 
         // Then
         verify(bookRepo, times(1)).deleteById(existingId);
@@ -344,9 +344,10 @@ class BookServiceImplTest {
 
         // When & Then
         assertDoesNotThrow(() -> {
-            bookService.delBook(missingId);
+            bookService.deleteBook(missingId);
         });
 
         // Дополнительно убеждаемся, что попытка удаления всё же была предпринята
-        verify(bookRepo).deleteById(missingId); }
+        verify(bookRepo).deleteById(missingId);
+    }
 }

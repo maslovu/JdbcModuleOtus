@@ -1,18 +1,22 @@
 package com.maslov.booksmaslov.service.impl;
 
+import com.maslov.booksmaslov.cache.EvictCommentCache;
 import com.maslov.booksmaslov.domain.Book;
 import com.maslov.booksmaslov.domain.Comment;
 import com.maslov.booksmaslov.dto.CommentDto;
 import com.maslov.booksmaslov.dto.CommentEvent;
 import com.maslov.booksmaslov.dto.CommentRequest;
+import com.maslov.booksmaslov.exception.ResourceNotFoundException;
 import com.maslov.booksmaslov.mapper.CommentMapper;
 import com.maslov.booksmaslov.repository.BookRepo;
 import com.maslov.booksmaslov.repository.CommentRepo;
 import com.maslov.booksmaslov.service.CommentService;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -23,22 +27,26 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Service
 public class CommentServiceImpl implements CommentService {
     private static final int FLUSH_THRESHOLD = 10;
 
     private final BookRepo bookRepo;
     private final CommentRepo commentRepo;
     private final CommentMapper mapper;
+    private final EntityManager entityManager;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
-    public CommentServiceImpl(BookRepo bookRepo, CommentRepo commentRepo, CommentMapper mapper) {
+    public CommentServiceImpl(BookRepo bookRepo,
+                              CommentRepo commentRepo,
+                              CommentMapper mapper,
+                              EntityManager entityManager) {
         this.bookRepo = bookRepo;
         this.commentRepo = commentRepo;
         this.mapper = mapper;
+        this.entityManager = entityManager;
     }
 
+    @Cacheable(value = "comments", key = "'comments::book::' + #bookId")
     @Override
     @Transactional(readOnly = true)
     public List<CommentDto> getAllCommentForBook(long bookId) {
@@ -46,34 +54,40 @@ public class CommentServiceImpl implements CommentService {
                 .map(mapper::toDto).toList();
     }
 
+    @EvictCommentCache
     @Transactional
     @Override
     public CommentDto createComment(CommentRequest comment, long bookId) {
-        var newComment = new Comment(comment.getText());
+        var newComment = new Comment(comment.text());
         var book = bookRepo.findById(bookId)
-                .orElseThrow(() -> new EntityNotFoundException("Book not found with id: " + bookId));
+                .orElseThrow(() -> new ResourceNotFoundException("Book/comment", bookId));
         book.addComment(newComment);
         Comment savedComment = commentRepo.save(newComment);
         return mapper.toDto(savedComment);
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "comments", allEntries = true),
+            @CacheEvict(value = "book", allEntries = true)
+    })
+    @Transactional
     @Override
     public void createCommentFromBatch(List<CommentEvent> events) {
 
         List<Comment> toSave = new ArrayList<>(events.size());
 
-        Set<Long> bookIds = events.stream().map(CommentEvent::getBookId).collect(Collectors.toSet());
+        Set<Long> bookIds = events.stream().map(CommentEvent::bookId).collect(Collectors.toSet());
         Map<Long, Book> bookCache = bookRepo.findAllById(bookIds).stream()
                 .collect(Collectors.toMap(Book::getId, b -> b));
 
         for (var event : events) {
-            Book book = bookCache.get(event.getBookId());
+            Book book = bookCache.get(event.bookId());
             if (book == null) {
-                throw new NoSuchElementException("Book not found with id: " + event.getBookId());
+                throw new NoSuchElementException("Book not found with id: " + event.bookId());
             }
 
             Comment comment = new Comment();
-            comment.setText(event.getComment());
+            comment.setText(event.comment());
             comment.setBook(book);
             toSave.add(comment);
 
@@ -87,13 +101,14 @@ public class CommentServiceImpl implements CommentService {
         }
     }
 
+    @EvictCommentCache
     @Transactional
     @Override
-    public CommentDto updateComment(CommentRequest newComment, long commentId) {
+    public CommentDto updateComment(CommentRequest newComment, long commentId, long bookId) {
         // Объект переходит в состояние Managed (управляется Hibernate)
         Comment commentFromDb = commentRepo.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("Comment not found with id: " + commentId));
-        commentFromDb.setText(newComment.getText());
+                .orElseThrow(() -> new ResourceNotFoundException("Comment", commentId));
+        commentFromDb.setText(newComment.text());
         // Вызывать явные методы сохранения типа em.merge() необязательно.
         // Так как метод помечен @Transactional, Hibernate в конце транзакции
         // сам заметит изменение текста и сгенерирует оптимальный SQL UPDATE.
@@ -103,11 +118,13 @@ public class CommentServiceImpl implements CommentService {
         return mapper.toDto(commentFromDb);
     }
 
+
+    @EvictCommentCache
     @Transactional
     @Override
-    public void deleteComment(long commentId) {
+    public void deleteComment(long commentId, long bookId) {
         Comment comment = commentRepo.findById(commentId)
-                .orElseThrow(() -> new EntityNotFoundException("Comment not found with id: " + commentId));
+                .orElseThrow(() -> new ResourceNotFoundException("Comment", commentId));
         if (comment.getBook() != null) {
             comment.getBook().getComments().remove(comment);
             comment.setBook(null);
@@ -116,8 +133,6 @@ public class CommentServiceImpl implements CommentService {
 
     private void persistAndClear(List<Comment> batch) {
         commentRepo.saveAllAndFlush(batch);
-        // === КРИТИЧНО ДЛЯ ПАМЯТИ ===
-        // Освобождаем память Persistence Context (L1 Cache)
         entityManager.clear();
         // Очищаем Java-коллекцию, чтобы GC мог забрать старые объекты
         batch.clear();
