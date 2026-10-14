@@ -15,7 +15,7 @@ public @interface ExistingId {
 
     Class<?> entityClass(); // Сущность, которую нужно проверить
 
-    String message() default "Объект с таким ID не найден";
+    String message() default "Object with this ID not found";
 
     Class<?>[] groups() default {};
 

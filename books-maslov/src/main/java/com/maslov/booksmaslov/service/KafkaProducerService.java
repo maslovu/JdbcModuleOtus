@@ -19,7 +19,7 @@ public class KafkaProducerService {
     private static final String TOPIC = "comments-topic";
 
     public void sendCommentEvent(CommentEvent request) {
-        log.info("Отправка события в Kafka для книги ID: {}", request.bookId());
+        log.info("Sending event to Kafka for book ID: {}", request.bookId());
 
         // Метод send() работает асинхронно
         CompletableFuture<SendResult<String, CommentEvent>> future =
@@ -28,10 +28,10 @@ public class KafkaProducerService {
         // Навешиваем коллбэки, чтобы логировать успех или ошибку отправки
         future.whenComplete((result, ex) -> {
             if (ex == null) {
-                log.info("Событие успешно отправлено в топик [{}]. Смещение (Offset): {}",
+                log.info("Event successfully sent to topic [{}]. Offset: {}",
                         TOPIC, result.getRecordMetadata().offset());
             } else {
-                log.error("Ошибка отправки события в Kafka для топика [{}]", TOPIC, ex);
+                log.error("Error sending event to Kafka for topic [{}]", TOPIC, ex);
             }
         });
     }
